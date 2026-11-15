@@ -1,5 +1,4 @@
 // Seeded canvas textures for Saintmere Hall: marble, carpet, book spines, panels,
-// walnut, catalogue drawers, brass — plus a bright sky for PMREM. All drawn.
 import * as THREE from 'three';
 import { makeRng } from './palette.js';
 
@@ -59,12 +58,12 @@ function marbleCanvas(mode) {
   });
 }
 
-// Burgundy carpet: gold diamond lattice, medallion diamonds, double border.
+// Forest-green carpet: gold diamond lattice, medallion diamonds, double border.
 function carpetCanvas() {
   const rng = makeRng(5207);
   return cnv(1024, 1024, (x) => {
-    x.fillStyle = '#7a2230'; x.fillRect(0, 0, 1024, 1024);
-    speck(x, rng, 9000, ['rgba(30,5,10,1)', 'rgba(255,190,170,1)'], 0.06);
+    x.fillStyle = '#1e463c'; x.fillRect(0, 0, 1024, 1024);
+    speck(x, rng, 9000, ['rgba(6,20,14,1)', 'rgba(214,230,200,1)'], 0.06);
     x.strokeStyle = 'rgba(201,162,39,0.4)'; x.lineWidth = 3;
     for (let i = -4; i < 9; i++) {
       x.beginPath(); x.moveTo(i * 256, 0); x.lineTo(i * 256 + 1024, 1024); x.stroke();
@@ -80,11 +79,10 @@ function carpetCanvas() {
   });
 }
 
-// Book spines: four shelf rows of cloth bindings — crimson, gold, teal, navy,
-// walnut, ivory — each with gilt bands. One canvas = one shelf unit's face.
+// Book spines: four shelf rows of cloth bindings in muted classics — forest,
 function booksCanvas() {
   const rng = makeRng(6311);
-  const cols = ['#7e2430', '#9e7b24', '#1f4d46', '#22355c', '#6b4a2f', '#cbbd97', '#4a2c3f', '#31556e'];
+  const cols = ['#1e463c', '#2c3a55', '#c08a3e', '#bfa880', '#6b4a2f', '#274e3a', '#4a3220', '#3d5a80'];
   return cnv(1024, 608, (x) => {
     x.fillStyle = '#241407'; x.fillRect(0, 0, 1024, 608);
     for (let r = 0; r < 4; r++) {
@@ -110,7 +108,6 @@ function booksCanvas() {
 }
 
 // Panelled wall: near-white so material tint decides the room — cream field,
-// gilt molding rectangles, a medallion ring, a plain dado band at the foot.
 function panelCanvas() {
   const rng = makeRng(7417);
   return cnv(1024, 1024, (x) => {
@@ -181,7 +178,6 @@ function plasterCanvas() {
 }
 
 // Brushed brass: streaks, scratches, patina, wear strip. Its luminance is
-// also the roughness map (bright wear = polished).
 function brassCanvas() {
   const rng = makeRng(9533 + 9);
   return cnv(512, 512, (x) => {
@@ -208,7 +204,7 @@ function brassCanvas() {
 // Wayfinding sign: deep-teal field, gold border, ivory capitals, team tab.
 export function signTexture(text, tab) {
   return tx(cnv(1024, 256, (x) => {
-    x.fillStyle = '#17352f'; x.fillRect(0, 0, 1024, 256);
+    x.fillStyle = '#14332b'; x.fillRect(0, 0, 1024, 256);
     x.strokeStyle = '#c9a227'; x.lineWidth = 8; x.strokeRect(14, 14, 996, 228);
     x.lineWidth = 2; x.strokeRect(34, 34, 956, 188);
     x.fillStyle = tab; x.fillRect(58, 78, 100, 100);
@@ -235,7 +231,7 @@ export function gaugeTexture() {
       x.fillText(String(i * 10), 256 + c1 * 128, 256 + s1 * 128);
     }
     const na = Math.PI * 0.75 + 0.68 * Math.PI * 1.5;
-    x.strokeStyle = '#9e2434'; x.lineWidth = 10;
+    x.strokeStyle = '#8a6d3b'; x.lineWidth = 10;
     x.beginPath(); x.moveTo(256, 256); x.lineTo(256 + Math.cos(na) * 176, 256 + Math.sin(na) * 176); x.stroke();
     x.fillStyle = '#c9a227'; x.beginPath(); x.arc(256, 256, 30, 0, 7); x.fill();
     x.fillStyle = '#26303a'; x.beginPath(); x.arc(256, 256, 12, 0, 7); x.fill();
@@ -243,7 +239,6 @@ export function gaugeTexture() {
 }
 
 // Painted sky for PMREM + background: pale-blue zenith, bright warm horizon
-// (window light), warm floor bounce below. Bright — this is a day scene.
 export function envTexture() {
   const c = cnv(1024, 512, (x) => {
     const g = x.createLinearGradient(0, 0, 0, 512);

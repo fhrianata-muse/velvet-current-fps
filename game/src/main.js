@@ -1,8 +1,4 @@
 // Saintmere Hall — boot and the one loop. A fixed 60 Hz simulation (state.js STEP)
-// feeds a render at the display's rate. This module owns the three.js scene, the
-// transient effects (tracers, flashes, impacts), the audio wiring, the player's own
-// actions, and the ?shot=1..4 staged captures: each shot puts the match into a real
-// simulation state, steps it, freezes it and sets window.__shotReady.
 import * as THREE from 'three';
 import { PALETTE, makeRng } from './palette.js';
 import { createMatch, STEP, attackTeam } from './state.js';
@@ -28,7 +24,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.toneMappingExposure = 1.12;
 document.getElementById('game').appendChild(renderer.domElement);
 
 initTextures(renderer.capabilities.getMaxAnisotropy());
@@ -59,7 +55,6 @@ sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.02;
 scene.add(sun);
 // Practicals: gentle warm accents at the vestibule, the conservatory and both
-// sites, plus the chandelier's glow — the daylight rig does the heavy lifting.
 for (const [x, y, z, c, i, d] of [
   [0, 3.4, 16, 0xfff1cf, 14, 14], [0, 3.4, -16, 0xfff1cf, 14, 14],
   [-17, 3.4, -15, 0xffe2b0, 12, 14], [18, 3.4, -15, 0xffe2b0, 12, 14],
@@ -82,12 +77,24 @@ events.length = 0;
 
 const player = match.actors.find((a) => a.isPlayer);
 const figures = new Map();
-for (const a of match.actors) {
-  if (a.isPlayer) continue;
-  const fig = createFigure(a.team);
+const teamCount = { siphon: 0, still: 0 };
+for (const a of match.actors) if (!a.isPlayer) a.teamIdx = teamCount[a.team]++;
+// Roles rotate with the round, so all six reference roles take the field over
+let figRound = match.round;
+function buildFigure(a) {
+  const fig = createFigure(a.team, (a.teamIdx + figRound - 1) % 3);
+  fig.setGun(a.weapon.def.id);
   a.figure = fig;
   scene.add(fig.group);
   figures.set(a.id, fig);
+}
+for (const a of match.actors) if (!a.isPlayer) buildFigure(a);
+function rebuildFigures() {
+  for (const a of match.actors) {
+    if (a.isPlayer) continue;
+    scene.remove(figures.get(a.id).group);
+    buildFigure(a);
+  }
 }
 const deviceMesh = createDevice();
 scene.add(deviceMesh.group);
@@ -193,7 +200,6 @@ function processEvents(now) {
     switch (e.kind) {
       case 'shot': {
         // Bots get a world-space muzzle flash; the player's own flash is the
-        // viewmodel's, so a flash sphere never fills the player's face.
         if (!e.actor.isPlayer) spawnFlash(muzzleOf(e.actor), 1);
         if (e.actor.isPlayer) {
           audio.shot(e.weapon);
@@ -212,8 +218,8 @@ function processEvents(now) {
         if (e.attacker?.isPlayer) { hud.hitmark(now, e.head); if (e.head) audio.headshot(); else audio.hit(); }
         if (e.target.isPlayer) {
           audio.hurt();
-          hud.els.vignette.style.boxShadow = 'inset 0 0 120px rgba(217,118,104,0.55)';
-          setTimeout(() => { hud.els.vignette.style.boxShadow = 'inset 0 0 120px rgba(217,118,104,0)'; }, 130);
+          hud.els.vignette.style.boxShadow = 'inset 0 0 120px rgba(146,44,32,0.55)';
+          setTimeout(() => { hud.els.vignette.style.boxShadow = 'inset 0 0 120px rgba(146,44,32,0)'; }, 130);
         }
         break;
       case 'kill':
@@ -345,7 +351,7 @@ function playerActions(dt) {
   if (input.takePressed('Tab')) hud.toggleBotStates();
 }
 
-// Scripted stand-in input for staged captures: no keys, no lock, look consumed as zero.
+// Scripted stand-in input for staged captures.
 function scriptedInput(keys = []) {
   const set = new Set(keys);
   return {
@@ -375,7 +381,6 @@ function stageShot(n) {
   const stillInput = scriptedInput();
   if (n === '1') {
     // Live firefight in the Grand Hall, round 1: player on the carpet runner, an
-    // enemy firing from the west statue's pedestal, an ally working the west side.
     match.phase = 'live'; match.phaseTime = 74;
     givePrimary(player, 'bastion5', 0.7);
     player.health = 62;
@@ -388,7 +393,7 @@ function stageShot(n) {
     place(enemies[2], 10.8, -3.5, Math.PI);
     for (let i = 0; i < 30; i++) stepMatch(match, STEP, { boxes, events, input: stillInput });
     events.length = 0;
-    // One live exchange, frozen mid-flash: the island enemy fires, the player answers.
+    // One live exchange, frozen mid-flash.
     const e = enemies.find((x) => x.alive) ?? enemies[0];
     e.yaw = Math.atan2(-(player.pos.x - e.pos.x), -(player.pos.z - e.pos.z));
     e.pitch = -0.26; // flash at chest, face clear
@@ -399,7 +404,6 @@ function stageShot(n) {
     player.health = 62; // pin the staged state last: in the fight, not fresh, not dead
   } else if (n === '2') {
     // Plant channel at Site A: the player plants at the socket with the Leech
-    // deploying in frame; an ally covers the conservatory-door approach.
     match.phase = 'live'; match.phaseTime = 58;
     match.planSite = 'A';
     match.device.carrier = player;
@@ -421,8 +425,6 @@ function stageShot(n) {
     player.intent = 'plant';
   } else if (n === '3') {
     // Defensive retake at Site B, round 2: Leech planted, an ally defuses under
-    // cover. The camera stands in the B doorway, clear of the walls, looking
-    // straight at the socket with the armillary behind it.
     match.round = 2;
     match.score.siphon = 1; match.score.still = 0;
     match.phase = 'planted';
@@ -464,6 +466,7 @@ function stageShot(n) {
 // ---------- Sync + loop ----------
 const camTmp = { x: 0, y: 0, z: 0 };
 function syncScene(now) {
+  if (match.round !== figRound) { figRound = match.round; rebuildFigures(); }
   for (const a of match.actors) {
     if (a.isPlayer) continue;
     const fig = figures.get(a.id);
@@ -480,7 +483,7 @@ function syncScene(now) {
   const d = match.device;
   const planting = match.channel?.kind === 'plant' ? match.channel : null;
   if (planting) {
-    // Mid-plant the Leech is on the socket, opening — not still on the planter's back.
+    // Mid-plant the Leech is on the socket, opening.
     const s = SITES[planting.site].socket;
     deviceMesh.group.position.set(s.x, 0, s.z);
     deviceMesh.group.rotation.y = 0;

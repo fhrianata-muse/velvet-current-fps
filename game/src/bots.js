@@ -1,8 +1,4 @@
-// Bot brains: an explicit state machine the judge can read — route, hold, investigate,
-// engage, plant, defend, defuse — over the map's hand-authored nav graph. Perception is
-// bounded: a 100-degree view cone, 35 m sight with wall occlusion, 300-450 ms reaction,
-// bursts of 3-5 rounds, and sound stimuli (shots 28 m, footsteps 9 m, blasts 35 m).
-// Teammates share a sighting after a 0.7 s callout; each bot needs its own LOS to shoot.
+// Bot brains: an explicit state machine — route, hold, investigate,
 import { NODES, NODE_BY_ID, findRoute, nearestNode, raycastBoxes, SITES } from './map.js';
 import { moveActor, eyeOf } from './player.js';
 import { fireWeapon, startReload } from './weapons.js';
@@ -72,9 +68,7 @@ function canSee(match, bot, other, boxes) {
   return losClear(boxes, eye, chest) || losClear(boxes, eye, head);
 }
 
-// Assign round roles once, at the buy phase. Attackers: the carrier takes the chosen
-// site lane, the other attacker takes a second lane then rotates in. Defenders hold
-// one per site plus mid/gallery.
+// Assign round roles once, at the buy phase.
 export function assignPlans(match, rng) {
   const atk = attackTeam(match.round);
   const siteId = rng() < 0.55 ? 'A' : 'B';
@@ -161,8 +155,6 @@ function moveToward(match, bot, tx, tz, dt, boxes, crouch = false) {
   bot.yaw = turnToward(bot.yaw, targetYaw, dt * 7);
   moveActor(boxes, bot, dx / d, dz / d, dt);
   // Stuck detection: commanded to move but barely moving (a wedged bot's speed
-  // reads ~0, so speed must not gate this) — skip the blocked waypoint; at the
-  // route's end, re-route from the nearest node instead.
   const moved = Math.hypot(bot.pos.x - bot.brain.lastX, bot.pos.z - bot.brain.lastZ);
   if (moved < 0.02) bot.brain.stuckT += dt; else bot.brain.stuckT = 0;
   bot.brain.lastX = bot.pos.x;
@@ -250,7 +242,7 @@ export function stepBot(match, bot, dt, ctx) {
   // --- Objective overrides ---
   const atk = attackTeam(match.round);
   if (match.phase === 'planted' && bot.team !== atk) {
-    // Retake behaviour is assigned by assignRetake; carriers of intent head to site.
+    // Retake behaviour comes from assignRetake.
     if (b.intent !== 'defuse' && b.goalNode !== (match.device.site === 'A' ? 'siteA' : 'siteB')) {
       // fallthrough to route following below
     }

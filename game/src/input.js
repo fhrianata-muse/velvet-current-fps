@@ -1,6 +1,4 @@
 // Keyboard and mouse input, plus the pointer-lock lifecycle. The simulation reads a
-// plain state object each fixed step; this module only translates events into it.
-// In staged captures (no lock) main.js drives the player from a script instead.
 export function createInput(canvas, onLockChange) {
   const state = {
     keys: new Set(),

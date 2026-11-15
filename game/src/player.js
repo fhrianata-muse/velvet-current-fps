@@ -1,7 +1,4 @@
 // Actor movement, shared by the player and the bots: acceleration and braking, a
-// collision circle resolved per axis against the map's box table, crouching with an
-// eye-height change, and ground height from the floor/ramp table.
-// Accuracy follows the real velocity this produces, so moving fire is honestly worse.
 import { MOVE } from './state.js';
 import { groundHeight, circleBlocked } from './map.js';
 
@@ -58,7 +55,7 @@ export function moveActor(boxes, actor, wishX, wishZ, dt) {
   return actor.speed;
 }
 
-// The player's own step: read the input state, turn the camera, build a wish direction.
+// The player's step: input, camera turn, wish direction.
 export function stepPlayer(match, actor, input, dt, boxes, events) {
   const look = input.takeLook();
   const sens = 0.0021;

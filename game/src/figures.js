@@ -1,6 +1,4 @@
 // Character figures and first-person viewmodels. Figures are jointed builds on
-// named proportion constants (1.82 m overall) — silhouette and team placement
-// first. The same proportions define the hitboxes: head box above the torso.
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';
 import { TEX } from './textures.js';
@@ -21,61 +19,101 @@ const brassMat = () => new THREE.MeshStandardMaterial({
   color: PALETTE.brass, roughness: 0.62, metalness: 0.9, envMapIntensity: 1,
 });
 
-// Named proportions (metres). Hip at 0.94, shoulders at 1.50, crown at 1.82.
-const P = { boot: 0.12, thigh: 0.42, shin: 0.40, torsoH: 0.56, torsoW: 0.46, torsoD: 0.28, shoulderW: 0.62, headH: 0.26 };
-const TEAM_LOOK = {
-  siphon: { coat: PALETTE.petrol, limb: PALETTE.petrolLight, plate: PALETTE.coral, shell: PALETTE.petrol, band: PALETTE.coral, pack: PALETTE.coralDark, visor: PALETTE.petrol },
-  still: { coat: PALETTE.ivory, limb: PALETTE.plumLight, plate: PALETTE.plum, shell: PALETTE.plum, band: PALETTE.brass, pack: PALETTE.plum, visor: PALETTE.plum },
+// Proportions (metres). Hip at 0.94, shoulders at 1.50, crown at 1.82, the
+const P = { boot: 0.12, thigh: 0.42, shin: 0.40, torsoH: 0.56, torsoW: 0.46, torsoD: 0.28 };
+const TEAMS = {
+  siphon: { coat: PALETTE.teal, limb: PALETTE.tealDark, accent: PALETTE.orange, hat: PALETTE.tealDark, visor: PALETTE.orange },
+  still: { coat: PALETTE.charcoal, limb: PALETTE.charcoalLight, accent: PALETTE.gold, hat: PALETTE.charcoal, visor: 0x2e8f83 },
+};
+// One row per role, in the reference sheet's order. Rifleman / Heavy / Scout
+const ROLES = {
+  siphon: [
+    { hat: 'fedora', face: 'plain', pads: 1 },
+    { hat: 'helm', face: 'visor', pads: 2, bulk: 1 },
+    { hat: 'cap', face: 'mask', pads: 1, slim: 1 },
+  ],
+  still: [
+    { hat: 'top', face: 'plain', tie: PALETTE.forest, pads: 2 },
+    { hat: 'fedora', face: 'plain', tie: PALETTE.ochre, pads: 1 },
+    { hat: 'helm', face: 'visor', pads: 2, bulk: 1 },
+  ],
+};
+const cyl = (r, h, colour, x, y, z) => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 18), mat(colour));
+  m.position.set(x, y, z);
+  m.castShadow = true;
+  return m;
 };
 
-export function createFigure(team) {
-  const L = TEAM_LOOK[team];
+export function createFigure(team, role = 0) {
+  const T = TEAMS[team], R = ROLES[team][role % 3];
+  const W = R.slim ? 0.42 : P.torsoW, D = P.torsoD;
   const g = new THREE.Group();
   const leg = (side) => {
     const hip = new THREE.Group();
     hip.position.set(0.11 * side, P.boot + P.thigh + P.shin, 0);
-    const thigh = box(0.17, P.thigh, 0.19, L.limb, 0, -P.thigh / 2, 0);
+    const thigh = box(0.17, P.thigh, 0.19, T.limb, 0, -P.thigh / 2, 0);
     const knee = new THREE.Group(); knee.position.y = -P.thigh;
-    const shin = box(0.15, P.shin, 0.17, L.limb, 0, -P.shin / 2, 0);
+    const shin = box(0.15, P.shin, 0.17, T.limb, 0, -P.shin / 2, 0);
+    const pad = box(0.16, 0.14, 0.05, PALETTE.armour, 0, -0.07, -0.105); // knee pad
+    const cuff = box(0.17, 0.07, 0.19, PALETTE.armour, 0, -P.shin + 0.10, 0); // boot cuff
     const boot = box(0.16, P.boot, 0.27, PALETTE.petrol, 0, -P.shin + P.boot / 2, -0.04);
-    knee.add(shin, boot); hip.add(thigh, knee); g.add(hip);
+    knee.add(shin, pad, cuff, boot); hip.add(thigh, knee); g.add(hip);
     return { hip, knee };
   };
   const legL = leg(-1), legR = leg(1);
   const upper = new THREE.Group();
   upper.position.y = P.boot + P.thigh + P.shin; // 0.94
   g.add(upper);
-  const torso = box(P.torsoW, P.torsoH, P.torsoD, L.coat, 0, P.torsoH / 2, 0);
-  const plate = box(0.36, 0.38, 0.05, L.plate, 0, 0.32, -0.155);
-  const stripe = team === 'still'
-    ? box(0.07, 0.30, 0.02, PALETTE.ivory, 0, 0.32, -0.185)
-    : box(0.30, 0.07, 0.02, PALETTE.ivory, 0, 0.32, -0.185);
-  const padL = box(0.16, 0.13, 0.30, L.plate, -0.23, 0.50, 0);
-  const padR = box(0.16, 0.13, 0.30, L.plate, 0.23, 0.50, 0);
-  const pack = box(0.34, 0.40, 0.15, L.pack, 0, 0.30, 0.215);
-  const strapL = box(0.07, 0.44, 0.02, PALETTE.petrol, -0.13, 0.32, -0.15);
-  const strapR = box(0.07, 0.44, 0.02, PALETTE.petrol, 0.13, 0.32, -0.15);
-  const pouch = box(0.34, 0.11, 0.05, PALETTE.petrol, 0, 0.08, -0.155);
-  upper.add(torso, plate, stripe, padL, padR, pack, strapL, strapR, pouch);
-  // Head: skull, team helmet shell with brim, ivory face plane, visor slit.
+  const plateD = R.bulk ? 0.07 : 0.05, plateF = -(D / 2) - plateD; // plate front face
+  upper.add(
+    box(W, P.torsoH, D, T.coat, 0, P.torsoH / 2, 0), // coat
+    box(R.bulk ? 0.42 : 0.36, R.bulk ? 0.44 : 0.40, plateD, PALETTE.armour, 0, 0.30, plateF + plateD / 2), // chest plate
+    box(0.07, 0.07, 0.02, T.accent, 0.10, 0.42, plateF - 0.01), // chest tab
+    box(W + 0.02, 0.09, D + 0.02, PALETTE.petrol, 0, 0.045, 0), // belt
+    box(0.08, 0.055, 0.02, T.accent, 0, 0.045, -(D / 2) - 0.02), // buckle
+    box(0.13, 0.09, 0.04, PALETTE.armour, -0.14, 0.045, -0.17), // belt pouch
+    box(0.30, 0.07, 0.30, T.coat, 0, 0.545, 0), // collar
+    box(0.13, 0.08, 0.13, PALETTE.skin, 0, 0.58, 0), // neck
+    box(0.34, 0.40, 0.14, PALETTE.armour, 0, 0.30, 0.21), // pack
+    box(0.10, 0.10, 0.02, T.accent, 0, 0.38, 0.29), // pack flap tab
+  );
+  if (R.tie) upper.add(box(0.07, 0.30, 0.02, R.tie, 0, 0.30, plateF - 0.01)); // tie over the plate
+  for (const side of [-1, 1]) { // shoulder pads; the grand roles get an accent cap strip
+    upper.add(box(R.pads === 2 ? 0.19 : 0.16, R.pads === 2 ? 0.13 : 0.10, 0.30, PALETTE.armour, side * (W / 2 + 0.02), 0.50, 0));
+    if (R.pads === 2) upper.add(box(0.19, 0.035, 0.31, T.accent, side * (W / 2 + 0.02), 0.565, 0));
+  }
+  // Head: skin block, face detail per role, then the role's hat.
   const headG = new THREE.Group();
-  headG.position.y = P.torsoH + 0.06;
+  headG.position.y = P.torsoH;
   upper.add(headG);
-  const skull = box(0.24, 0.22, 0.25, PALETTE.ivory, 0, 0.13, 0);
-  const shell = box(0.28, 0.13, 0.30, L.shell, 0, 0.235, 0);
-  const brim = box(0.28, 0.03, 0.12, L.shell, 0, 0.175, -0.19);
-  const band = box(0.29, 0.05, 0.31, L.band, 0, 0.175, 0);
-  const visor = box(0.17, 0.045, 0.02, L.visor, 0, 0.15, -0.135);
-  visor.material = new THREE.MeshStandardMaterial({ color: L.visor, roughness: 0.35, metalness: 0.2, emissive: team === 'still' ? PALETTE.brass : 0x000000, emissiveIntensity: 0.7, envMapIntensity: 0.5 });
-  headG.add(skull, shell, brim, band, visor);
+  headG.add(box(0.30, 0.32, 0.30, PALETTE.skin, 0, 0.16, 0));
+  if (R.face !== 'visor') {
+    headG.add(box(0.04, 0.05, 0.012, 0x1c1a17, -0.066, 0.185, -0.152), box(0.04, 0.05, 0.012, 0x1c1a17, 0.066, 0.185, -0.152)); // eyes
+    if (R.face === 'plain') headG.add(box(0.07, 0.014, 0.012, 0x6b4a35, 0, 0.075, -0.152)); // mouth
+    if (R.face === 'mask') headG.add(box(0.305, 0.14, 0.305, PALETTE.mask, 0, 0.085, 0)); // face mask wrap
+  } else {
+    const visor = box(0.25, 0.07, 0.02, T.visor, 0, 0.20, -0.152); // visor slit
+    visor.material = new THREE.MeshStandardMaterial({ color: T.visor, roughness: 0.3, metalness: 0.25, emissive: T.visor, emissiveIntensity: 0.55, envMapIntensity: 0.6 });
+    headG.add(visor);
+  }
+  if (R.hat === 'fedora') {
+    headG.add(cyl(0.245, 0.025, T.hat, 0, 0.315, 0), box(0.27, 0.14, 0.27, T.hat, 0, 0.385, 0), box(0.28, 0.05, 0.28, T.accent, 0, 0.345, 0));
+  } else if (R.hat === 'top') {
+    headG.add(cyl(0.235, 0.025, T.hat, 0, 0.315, 0), box(0.25, 0.24, 0.25, T.hat, 0, 0.43, 0), box(0.26, 0.05, 0.26, T.accent, 0, 0.335, 0));
+  } else if (R.hat === 'cap') {
+    headG.add(box(0.32, 0.07, 0.32, T.hat, 0, 0.345, 0), box(0.20, 0.02, 0.13, T.hat, 0, 0.315, -0.21), cyl(0.032, 0.016, T.accent, 0, 0.385, 0));
+  } else { // helm: dome over the crown, back skirt, accent brow mark
+    headG.add(box(0.35, 0.22, 0.35, T.hat, 0, 0.27, 0), box(0.35, 0.16, 0.06, T.hat, 0, 0.14, 0.16), box(0.10, 0.04, 0.02, T.accent, 0, 0.36, -0.18));
+  }
   // Arms jointed at shoulder and elbow, posed onto the gun.
   const arm = (side, reach) => {
     const sh = new THREE.Group();
     sh.position.set(0.285 * side, 0.47, 0);
-    const up = box(0.14, 0.30, 0.15, L.limb, 0, -0.15, 0);
+    const up = box(0.14, 0.30, 0.15, T.coat, 0, -0.15, 0);
     const el = new THREE.Group(); el.position.y = -0.30;
-    const fore = box(0.12, 0.27, 0.13, L.limb, 0, -0.135, 0);
-    const hand = box(0.10, 0.09, 0.10, PALETTE.petrol, 0, -0.29, 0);
+    const fore = box(0.12, 0.27, 0.13, T.limb, 0, -0.135, 0);
+    const hand = box(0.10, 0.09, 0.11, PALETTE.skin, 0, -0.29, 0);
     el.add(fore, hand); sh.add(up, el); upper.add(sh);
     sh.rotation.x = reach[0]; el.rotation.x = reach[1];
     return { sh, el };
@@ -100,7 +138,7 @@ export function createFigure(team) {
   return {
     group: g,
     setGun,
-    // walk: leg swing phase; crouch: 0..1 compression; dead: 0..1 fall to the floor.
+    // walk: leg swing; crouch: 0..1 compression; dead: 0..1 fall.
     pose(walk, crouch, dead, time) {
       const swing = Math.sin(walk) * 0.5;
       legL.hip.rotation.x = swing - crouch * 0.75;
@@ -153,9 +191,6 @@ export function rayAabb(ox, oy, oz, dx, dy, dz, b) {
 }
 
 // ---- Guns: extruded side profiles, one clean silhouette per class — angled
-// stock, curved grip and magazine, segmented rail, perforated handguard, two-tone
-// steel, brass/coral accents. Shape x runs toward the muzzle, y is up; one builder
-// serves the detailed viewmodel and the plainer bot-held world gun.
 function prof(pts, thick, m, bev = 0.004) {
   const s = new THREE.Shape();
   pts.forEach((p, i) => {
@@ -175,11 +210,11 @@ function prof(pts, thick, m, bev = 0.004) {
 function buildGun(id, detail) {
   const g = new THREE.Group();
   const gm = gunmetal(), br = brassMat();
-  const dark = mat(PALETTE.petrol, 0.58), ivory = mat(PALETTE.ivory, 0.55), coral = mat(PALETTE.coral, 0.55);
+  const dark = mat(PALETTE.petrol, 0.58), ivory = mat(PALETTE.ivory, 0.55), amber = mat(PALETTE.amber, 0.55);
   const copper = mat(PALETTE.copper, 0.38);
   const worn = new THREE.MeshStandardMaterial({ map: TEX.brass?.map ?? null, color: 0x9c6b3f, roughness: 0.82, metalness: 0.12, envMapIntensity: 0.4 });
   const gripTex = new THREE.MeshStandardMaterial({ map: TEX.wood?.map ?? null, color: PALETTE.petrol, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.25 });
-  const lens = new THREE.MeshStandardMaterial({ color: PALETTE.coral, emissive: PALETTE.coral, emissiveIntensity: 0.85, roughness: 0.35 });
+  const lens = new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 0.85, roughness: 0.35 });
   const B = (w, h, d, m, x, y, z, rx = 0) => {
     const q = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
     q.position.set(x, y, z); q.rotation.x = rx; g.add(q); return q;
@@ -210,7 +245,7 @@ function buildGun(id, detail) {
     rail(0.03, 0.21, 0.085, 0.028);
     B(0.03, 0.02, 0.032, dark, 0, 0.09, -0.016);
     bead(0.222, 0.09);
-    CY(0.006, 0.056, coral, 0, -0.004, -0.03, 'x');
+    CY(0.006, 0.056, amber, 0, -0.004, -0.03, 'x');
     if (detail) {
       for (const s of [-1, 1]) {
         B(0.004, 0.016, 0.05, br, s * 0.026, 0.047, -0.13);
@@ -238,7 +273,7 @@ function buildGun(id, detail) {
     CY(0.02, 0.006, lens, 0, 0.126, -0.181);
     if (detail) {
       for (let i = 0; i < 3; i++) {
-        B(0.004, 0.018, 0.03, coral, 0.025, -0.09 - i * 0.036, -0.272 - i * 0.009);
+        B(0.004, 0.018, 0.03, amber, 0.025, -0.09 - i * 0.036, -0.272 - i * 0.009);
         B(0.052, 0.012, 0.056, gm, 0, -0.052 - i * 0.034, -0.475);
       }
       B(0.05, 0.014, 0.03, br, 0, 0.072, 0.045);
@@ -252,14 +287,14 @@ function buildGun(id, detail) {
     CY(0.031, 0.62, copper, 0, 0.032, -0.36);
     CY(0.037, 0.035, copper, 0, 0.032, -0.685);
     CY(0.019, 0.44, dark, 0, -0.018, -0.32);
-    CY(0.043, 0.17, mat(PALETTE.coralDark, 0.65), 0, -0.018, -0.40);
+    CY(0.043, 0.17, mat(PALETTE.wood, 0.65), 0, -0.018, -0.40);
     rail(0.02, 0.2, 0.069, 0.04);
     bead(0.655, 0.072);
     if (detail) {
       for (let i = 0; i < 4; i++) {
         const ring = new THREE.Mesh(new THREE.TorusGeometry(0.044, 0.005, 6, 14), dark);
         ring.position.set(0, -0.018, -0.345 - i * 0.038); g.add(ring);
-        B(0.004, 0.014, 0.02, i === 3 ? coral : br, 0.037, 0.012, -0.08 - i * 0.045);
+        B(0.004, 0.014, 0.02, i === 3 ? amber : br, 0.037, 0.012, -0.08 - i * 0.045);
       }
     }
     muzzle = 0.71;
@@ -281,7 +316,7 @@ function buildGun(id, detail) {
       CY(0.024, 0.02, br, 0, 0.01, -0.665); CY(0.024, 0.02, br, 0, 0.01, -0.71);
       B(0.044, 0.01, 0.018, dark, 0, 0.01, -0.862); B(0.044, 0.01, 0.018, dark, 0, 0.01, -0.9);
       B(0.048, 0.01, 0.02, dark, 0, -0.112, -0.2, 0.35); B(0.048, 0.01, 0.02, dark, 0, -0.168, -0.222, 0.5);
-      for (let i = 0; i < 2; i++) B(0.004, 0.02, 0.024, coral, 0.024, -0.082 - i * 0.05, -0.186 - i * 0.013);
+      for (let i = 0; i < 2; i++) B(0.004, 0.02, 0.024, amber, 0.024, -0.082 - i * 0.05, -0.186 - i * 0.013);
       CY(0.007, 0.068, br, 0, 0.0, -0.08, 'x'); CY(0.007, 0.068, br, 0, -0.01, -0.24, 'x');
       CY(0.01, 0.03, br, 0.045, 0.03, -0.03, 'x');
       B(0.004, 0.03, 0.11, ivory, 0.027, 0.026, 0.16);
@@ -296,7 +331,7 @@ function buildGun(id, detail) {
 export function createViewmodel(weaponId) {
   const built = buildGun(weaponId, true);
   const g = built.group;
-  const sleeve = box(0.09, 0.09, 0.22, PALETTE.petrol, 0.02, -0.12, -0.28);
+  const sleeve = box(0.09, 0.09, 0.22, PALETTE.teal, 0.02, -0.12, -0.28);
   g.add(sleeve);
   const flash = new THREE.Mesh(
     new THREE.PlaneGeometry(0.34, 0.34),
@@ -308,35 +343,45 @@ export function createViewmodel(weaponId) {
   return { group: g, flash };
 }
 
-// The Pulse Leech: a brass tripod that opens on a regulator socket; its coral
-// column drains as the fuse burns.
+// The Pulse Leech: a brass-and-glass regulator thief on a floor medallion.
 export function createDevice() {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, 0.5), brassMat());
-  base.position.set(0, 0.06, 0); base.castShadow = true; g.add(base);
-  for (let i = 0; i < 3; i++) {
-    const leg = box(0.07, 0.5, 0.07, PALETTE.brassDark, Math.sin(i * 2.1) * 0.3, 0.25, Math.cos(i * 2.1) * 0.3);
-    leg.rotation.z = Math.sin(i * 2.1) * 0.5;
-    leg.rotation.x = -Math.cos(i * 2.1) * 0.5;
-    g.add(leg);
+  const medallion = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 0.07, 24), brassMat());
+  medallion.position.y = 0.035; medallion.receiveShadow = true; g.add(medallion);
+  const plateRing = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.028, 8, 28), brassMat());
+  plateRing.rotation.x = Math.PI / 2; plateRing.position.y = 0.075; g.add(plateRing);
+  const stem = cyl(0.055, 0.5, PALETTE.brassDark, 0, 0.32, 0);
+  g.add(stem);
+  for (let i = 0; i < 3; i++) { // tripod feet, planted on the medallion
+    const foot = box(0.07, 0.06, 0.3, PALETTE.brassDark, Math.sin(i * 2.1) * 0.22, 0.1, Math.cos(i * 2.1) * 0.22);
+    foot.rotation.y = -i * 2.1;
+    g.add(foot);
   }
-  const column = box(0.16, 1.1, 0.16, PALETTE.coral, 0, 0.65, 0);
-  column.material = new THREE.MeshBasicMaterial({ color: PALETTE.coral });
-  g.add(column);
-  const tip = box(0.1, 0.14, 0.1, PALETTE.opal, 0, 1.28, 0);
-  tip.material = new THREE.MeshBasicMaterial({ color: PALETTE.opal });
-  g.add(tip);
+  const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.14, 12), brassMat());
+  cage.position.y = 0.62; cage.castShadow = true; g.add(cage);
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.115, 0.52, 14),
+    new THREE.MeshStandardMaterial({ color: PALETTE.winSky, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.1, envMapIntensity: 1.2 }));
+  glass.position.y = 0.95; g.add(glass);
+  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.48, 10),
+    new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 1.6, roughness: 0.4 }));
+  column.position.y = 0.95; g.add(column);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.1, 12), brassMat());
+  cap.position.y = 1.26; cap.castShadow = true; g.add(cap);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8),
+    new THREE.MeshStandardMaterial({ color: PALETTE.opal, emissive: PALETTE.opal, emissiveIntensity: 1.2 }));
+  tip.position.y = 1.36; g.add(tip);
   return {
     group: g,
-    // frac: remaining fuse fraction while planted; carried hides the column.
+    // frac: remaining fuse fraction while planted; carried shrinks the core.
     setPlanted(frac) {
-      column.scale.y = Math.max(0.05, frac);
-      column.position.y = 0.1 + 0.55 * Math.max(0.05, frac);
+      const f = Math.max(0.05, frac);
+      column.scale.y = f;
+      column.position.y = 0.71 + 0.24 * f;
       g.visible = true;
     },
     setCarried() {
       column.scale.y = 0.25;
-      column.position.y = 0.22;
+      column.position.y = 0.77;
       g.visible = true;
     },
   };

@@ -1,7 +1,4 @@
 // Gunplay: hitscan with a spread cone that grows with movement and sustained fire,
-// recoil that kicks the view up, separate head/torso/leg hitboxes, and the Clatterbox
-// fragmentation grenade with bounces, a fuse and wall-blocked falloff damage.
-// Stopping to aim pays: spread follows the shooter's actual velocity, not a toggle.
 import { WEAPONS, GRENADE } from './state.js';
 import { raycastBoxes } from './map.js';
 import { actorHitboxes, rayAabb } from './figures.js';
@@ -143,7 +140,6 @@ export function throwGrenade(match, actor, origin, dir, events) {
 }
 
 // Grenade physics: gravity, floor rest, wall bounces off the box table, then a
-// 1.8 s fuse, linear falloff to 5 m, and solid walls block the blast.
 export function stepGrenades(match, dt, boxes, events) {
   for (let i = match.grenades.length - 1; i >= 0; i--) {
     const g = match.grenades[i];

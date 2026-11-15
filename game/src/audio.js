@@ -1,7 +1,4 @@
-// All sound is synthesized with WebAudio: no audio files, no network. Dry mechanical
-// gun reports, tile footsteps, the Pulse Leech's rising pulse and a low turbine hum.
-// The context is created lazily on the first user gesture (browser autoplay policy);
-// in staged captures it simply stays silent.
+// All sound is synthesized with WebAudio: no files, no network.
 export function createAudio() {
   let ctx = null;
   let master = null;

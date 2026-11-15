@@ -1,9 +1,4 @@
-// Match orchestration: the round loop (buy 10 s, live 90 s, result 4 s), the economy,
-// the Pulse Leech plant/defuse channels, and the ONE place rounds are resolved.
-// Resolution precedence, checked in this order every step: explosion, defuse,
-// elimination (with the planted exception), timeout. The player is always a Siphon;
-// the attacking side alternates each round, so the player attacks on odd rounds and
-// defends on even ones.
+// Match orchestration: the round loop, the economy, the win rules.
 import { RULES, WEAPONS, GRENADE, attackTeam, otherTeam } from './state.js';
 import { SPAWNS, SITES } from './map.js';
 import { newWeapon, refill, stepWeapon, stepGrenades } from './weapons.js';
@@ -232,7 +227,6 @@ function stepChannel(match, dt, events) {
 }
 
 // One fixed step of the whole match. input is the real input module for the player,
-// or a scripted stand-in during staged captures.
 export function stepMatch(match, dt, ctx) {
   const { boxes, events, input } = ctx;
   match.time += dt;
@@ -241,7 +235,6 @@ export function stepMatch(match, dt, ctx) {
   if (match.phase === 'buy' || match.phase === 'result') {
     match.phaseTime -= dt;
     // The player may walk during buy; bots hold at spawn until the round goes live,
-    // so no shot is ever fired in the buy phase.
     if (player.alive && input) stepPlayer(match, player, input, dt, boxes, events);
     for (const a of match.actors) {
       stepWeapon(a.weapon, dt);

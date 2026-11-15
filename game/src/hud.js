@@ -1,6 +1,4 @@
-// The HUD: DOM panels in the mansion instrument style. It only reads match state and
-// writes changed text — all rules live in game.js. The crosshair gap is driven by the
-// shooter's real spread, so the cost of moving fire is visible, not just simulated.
+// The HUD: DOM panels in the mansion instrument style; reads state only.
 import { WEAPONS, GRENADE, RULES, attackTeam } from './state.js';
 
 const $ = (id) => document.getElementById(id);

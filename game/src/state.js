@@ -1,6 +1,4 @@
-// The one home for match state and the tuning numbers the brief fixes. Everything else
-// reads and writes through this object; nothing keeps a private copy of the score, the
-// clock or the economy, so a round can be resolved in exactly one place (game.js).
+// Match state and the fixed tuning numbers, in one home.
 
 export const STEP = 1 / 60; // fixed-step simulation, 60 Hz, apart from rendering
 
@@ -34,7 +32,6 @@ export const MOVE = {
 };
 
 // Weapon table. Damage is body/head; the head multiplier is 3x for every gun.
-// spreadBase/spreadMove are half-angles in degrees; bloom decays.
 export const WEAPONS = {
   pip9: {
     id: 'pip9', name: 'Pip-9', role: 'Sidearm', price: 0,
@@ -69,8 +66,6 @@ export const GRENADE = {
 };
 
 // createMatch returns a fresh match state. Actors are filled in by game.js:
-// { id, team, isPlayer, alive, health, pos, vel, yaw, pitch, crouch, weapon state,
-//   money, hasDevice, bot brain fields, figure handle }.
 export function createMatch(rng) {
   return {
     rng,
