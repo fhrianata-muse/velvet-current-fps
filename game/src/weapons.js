@@ -1,4 +1,4 @@
-// Gunplay: hitscan with a spread cone that grows with movement and sustained fire,
+// Gunplay: hitscan; spread grows with movement and sustained fire.
 import { WEAPONS, GRENADE } from './state.js';
 import { raycastBoxes } from './map.js';
 import { actorHitboxes, rayAabb } from './figures.js';
@@ -36,7 +36,7 @@ export function stepWeapon(w, dt) {
   }
   // Bloom recovers after a 120 ms pause.
   if (w.bloomIdle > 0) w.bloomIdle -= dt;
-  else if (w.bloom > 0) w.bloom = Math.max(0, w.bloom - 3 * dt); // bloom is stored in degrees; recovers at 3 deg/s
+  else if (w.bloom > 0) w.bloom = Math.max(0, w.bloom - 3 * dt); // bloom in degrees, recovers 3 deg/s
 }
 
 export function startReload(w, events, actor) {
@@ -139,7 +139,7 @@ export function throwGrenade(match, actor, origin, dir, events) {
   return true;
 }
 
-// Grenade physics: gravity, floor rest, wall bounces off the box table, then a
+// Grenade physics: gravity, floor rest, wall bounces.
 export function stepGrenades(match, dt, boxes, events) {
   for (let i = match.grenades.length - 1; i >= 0; i--) {
     const g = match.grenades[i];
@@ -148,7 +148,7 @@ export function stepGrenades(match, dt, boxes, events) {
     let nx = g.x + g.vx * dt;
     let ny = g.y + g.vy * dt;
     let nz = g.z + g.vz * dt;
-    // Wall bounces: test the new point against solid boxes at grenade height.
+    // Wall bounces off solid boxes.
     for (const b of boxes) {
       if (ny < b.y0 || ny > b.y0 + b.h) continue;
       if (nx > b.x - b.w / 2 - 0.09 && nx < b.x + b.w / 2 + 0.09 && nz > b.z - b.d / 2 - 0.09 && nz < b.z + b.d / 2 + 0.09) {

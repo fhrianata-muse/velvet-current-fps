@@ -79,7 +79,7 @@ export function createFigure(team, role = 0) {
     box(0.10, 0.10, 0.02, T.accent, 0, 0.38, 0.29), // pack flap tab
   );
   if (R.tie) upper.add(box(0.07, 0.30, 0.02, R.tie, 0, 0.30, plateF - 0.01)); // tie over the plate
-  for (const side of [-1, 1]) { // shoulder pads; the grand roles get an accent cap strip
+  for (const side of [-1, 1]) { // shoulder pads
     upper.add(box(R.pads === 2 ? 0.19 : 0.16, R.pads === 2 ? 0.13 : 0.10, 0.30, PALETTE.armour, side * (W / 2 + 0.02), 0.50, 0));
     if (R.pads === 2) upper.add(box(0.19, 0.035, 0.31, T.accent, side * (W / 2 + 0.02), 0.565, 0));
   }
@@ -90,6 +90,7 @@ export function createFigure(team, role = 0) {
   headG.add(box(0.30, 0.32, 0.30, PALETTE.skin, 0, 0.16, 0));
   if (R.face !== 'visor') {
     headG.add(box(0.04, 0.05, 0.012, 0x1c1a17, -0.066, 0.185, -0.152), box(0.04, 0.05, 0.012, 0x1c1a17, 0.066, 0.185, -0.152)); // eyes
+    if (R.face === 'plain') headG.add(box(0.21, 0.028, 0.012, 0x2a2019, 0, 0.245, -0.152)); // brow slit
     if (R.face === 'plain') headG.add(box(0.07, 0.014, 0.012, 0x6b4a35, 0, 0.075, -0.152)); // mouth
     if (R.face === 'mask') headG.add(box(0.305, 0.14, 0.305, PALETTE.mask, 0, 0.085, 0)); // face mask wrap
   } else {
@@ -371,7 +372,7 @@ export function createDevice() {
     new THREE.MeshStandardMaterial({ color: PALETTE.winSky, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.1, envMapIntensity: 1.2 }));
   glass.position.y = 0.95; g.add(glass);
   const column = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.48, 10),
-    new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 2.8, roughness: 0.4 }));
+    new THREE.MeshStandardMaterial({ color: 0xff7a00, emissive: 0xff7a00, emissiveIntensity: 2.4, roughness: 0.4 }));
   column.position.y = 0.95; g.add(column);
   const glow = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.014, 6, 32), column.material);
   glow.rotation.x = Math.PI / 2; glow.position.y = 0.078; g.add(glow);

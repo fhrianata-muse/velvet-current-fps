@@ -542,11 +542,22 @@ export function buildMap(scene) {
   sign('A · LIBRARY', '#e07b2a', -17, -12.42, Math.PI);
   sign('B · GALLERY', '#1a5c3d', 17, -12.42, Math.PI);
   // Porter's desk dressing.
-  for (const s of [-2.3, 0, 2.3]) add(geoFor(2.1, 0.86, 0.04), woodM, s, 0.55, 15.78);
+  for (const s of [-2.3, 0, 2.3]) {
+    add(geoFor(2.1, 0.86, 0.04), oakM, s, 0.55, 15.78);
+    add(geoFor(1.78, 0.58, 0.03), woodM, s, 0.55, 15.8);
+  }
   const rail2 = add(new THREE.CylinderGeometry(0.035, 0.035, 7.2, 10), brassM, 0, 1.26, 15.82);
   rail2.rotation.z = Math.PI / 2;
   tableLamp(-2.9, 1.22, 15.2); tableLamp(2.9, 1.22, 15.2);
   bookStack(0.4, 1.22, 15.25, 3);
+  // The hall's name over the counter.
+  for (const s of [-1.15, 1.15]) add(new THREE.CylinderGeometry(0.03, 0.03, 1.7, 8), brassM, s, 2.05, 15.13);
+  sign('SAINTMERE', '#c9a227', 0, 15.13, 0);
+  // Notice board: walnut, pinned papers.
+  add(geoFor(1.7, 1.15, 0.05), oakM, 4.6, 1.95, 12.28);
+  const paperM = material(PALETTE.ivory, 0, 'none');
+  for (const [px, py, pw, ph] of [[4.25, 2.2, 0.42, 0.55], [4.78, 2.28, 0.34, 0.4], [4.35, 1.62, 0.5, 0.42], [4.92, 1.7, 0.3, 0.5]])
+    add(geoFor(pw, ph, 0.02), paperM, px, py, 12.32);
 
   // Winged statues.
   const wingShape = new THREE.Shape();

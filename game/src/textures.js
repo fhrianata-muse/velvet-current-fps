@@ -63,16 +63,23 @@ function carpetCanvas() {
   const rng = makeRng(5207);
   return cnv(1024, 1024, (x) => {
     x.fillStyle = '#1a5c3d'; x.fillRect(0, 0, 1024, 1024);
+    x.fillStyle = 'rgba(20,51,43,0.35)'; // two-tone field: alternate deep-forest cells
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if ((i + j) % 2) x.fillRect(i * 256, j * 256, 256, 256);
     speck(x, rng, 9000, ['rgba(6,20,14,1)', 'rgba(214,230,200,1)'], 0.06);
-    x.strokeStyle = 'rgba(201,162,39,0.4)'; x.lineWidth = 3;
+    x.strokeStyle = 'rgba(201,162,39,0.22)'; x.lineWidth = 3;
     for (let i = -4; i < 9; i++) {
       x.beginPath(); x.moveTo(i * 256, 0); x.lineTo(i * 256 + 1024, 1024); x.stroke();
       x.beginPath(); x.moveTo(i * 256, 1024); x.lineTo(i * 256 + 1024, 0); x.stroke();
     }
-    x.fillStyle = 'rgba(201,162,39,0.30)';
+    // Bordered medallions: brass rings, diamond outline, dark heart.
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
       const cx = 128 + i * 256, cy = 128 + j * 256;
-      x.beginPath(); x.moveTo(cx, cy - 44); x.lineTo(cx + 44, cy); x.lineTo(cx, cy + 44); x.lineTo(cx - 44, cy); x.closePath(); x.fill();
+      x.strokeStyle = 'rgba(201,162,39,0.85)'; x.lineWidth = 6;
+      x.beginPath(); x.arc(cx, cy, 52, 0, 7); x.stroke();
+      x.lineWidth = 3; x.beginPath(); x.arc(cx, cy, 40, 0, 7); x.stroke();
+      x.beginPath(); x.moveTo(cx, cy - 26); x.lineTo(cx + 26, cy); x.lineTo(cx, cy + 26); x.lineTo(cx - 26, cy); x.closePath(); x.stroke();
+      x.fillStyle = '#14332b'; x.beginPath(); x.arc(cx, cy, 11, 0, 7); x.fill();
+      x.fillStyle = '#c9a227'; x.beginPath(); x.arc(cx, cy, 4, 0, 7); x.fill();
     }
     x.strokeStyle = '#c9a227'; x.lineWidth = 10; x.strokeRect(26, 26, 972, 972);
     x.lineWidth = 3; x.strokeRect(58, 58, 908, 908);
@@ -113,14 +120,17 @@ function panelCanvas() {
   return cnv(1024, 1024, (x) => {
     x.fillStyle = '#eadfc4'; x.fillRect(0, 0, 1024, 1024);
     speck(x, rng, 3600, ['rgba(120,100,60,1)', 'rgba(255,255,255,1)'], 0.05);
-    x.strokeStyle = 'rgba(146,116,58,0.75)'; x.lineWidth = 9; x.strokeRect(52, 52, 920, 700);
-    x.strokeStyle = 'rgba(180,148,80,0.8)'; x.lineWidth = 3; x.strokeRect(84, 84, 856, 636);
-    x.beginPath(); x.arc(512, 268, 118, 0, 7); x.lineWidth = 8; x.stroke();
+    x.strokeStyle = 'rgba(138,109,59,0.95)'; x.lineWidth = 10; x.strokeRect(52, 52, 920, 700);
+    x.strokeStyle = 'rgba(160,128,66,0.9)'; x.lineWidth = 3; x.strokeRect(84, 84, 856, 636);
+    x.beginPath(); x.arc(512, 268, 118, 0, 7); x.lineWidth = 9; x.stroke();
+    x.strokeStyle = 'rgba(26,92,61,0.55)'; x.lineWidth = 16; // forest ring inside the brass
+    x.beginPath(); x.arc(512, 268, 100, 0, 7); x.stroke();
+    x.strokeStyle = 'rgba(138,109,59,0.95)';
     x.beginPath(); x.arc(512, 268, 84, 0, 7); x.lineWidth = 3; x.stroke();
-    x.fillStyle = 'rgba(146,116,58,0.5)';
+    x.fillStyle = 'rgba(26,92,61,0.8)';
     x.beginPath(); x.arc(512, 268, 26, 0, 7); x.fill();
-    x.fillStyle = 'rgba(90,72,40,0.20)'; x.fillRect(0, 776, 1024, 248);
-    x.fillStyle = 'rgba(146,116,58,0.65)'; x.fillRect(0, 768, 1024, 8);
+    x.fillStyle = 'rgba(20,51,43,0.32)'; x.fillRect(0, 776, 1024, 248);
+    x.fillStyle = 'rgba(138,109,59,0.9)'; x.fillRect(0, 768, 1024, 8);
     x.fillStyle = 'rgba(60,45,20,0.30)'; x.fillRect(0, 990, 1024, 34);
   });
 }

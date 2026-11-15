@@ -37,7 +37,7 @@ export function resetRound(match, events) {
     const spot = list[counts[a.team]++ % list.length];
     a.pos.x = spot.x; a.pos.z = spot.z;
     a.vel.x = 0; a.vel.z = 0;
-    a.yaw = a.team === atk ? 0 : Math.PI; // yaw 0 faces north (-z): attackers spawn south and face north
+    a.yaw = a.team === atk ? 0 : Math.PI; // yaw 0 faces north (-z)
     a.pitch = 0;
     a.crouch = false;
     a.intent = null;
@@ -69,7 +69,7 @@ export function resetRound(match, events) {
   match.phaseTime = RULES.buySeconds;
   match.result = null;
   assignPlans(match, match.rng);
-  // Bots shop at once: rifle first, then a Clatterbox, as credits allow.
+  // Bots shop at once, as credits allow.
   for (const a of match.actors) {
     if (a.isPlayer) continue;
     botBuy(a);
@@ -94,7 +94,7 @@ function botBuy(a) {
   }
 }
 
-// A buy request from the HUD (player) or a bot purchase. Returns true when it lands.
+// A buy request; returns true when it lands.
 export function buyItem(match, actor, itemId, events) {
   if (match.phase !== 'buy' || !actor.alive) return false;
   if (itemId === 'grenade') {
@@ -119,7 +119,7 @@ export function equipSlot(actor, slot) {
   if (slot === 'primary' && actor.primaryState) actor.weapon = actor.primaryState;
   if (slot === 'sidearm') {
     if (actor.primaryState && actor.weapon === actor.primaryState) {
-      // keep the primary state parked; sidearm is a fresh persistent state
+      // sidearm is a fresh persistent state
     }
     if (!actor.sidearmState) actor.sidearmState = actor.primaryId ? newWeapon('pip9') : actor.weapon;
     actor.weapon = actor.sidearmState;
@@ -153,7 +153,7 @@ function resolveRound(match, events) {
     if (match.phaseTime <= 0) { endRound(match, def, 'Time expired', events); return; }
   }
   if (match.phase === 'planted') {
-    // Eliminating the attackers no longer ends it; only the fuse or the defuse does.
+    // Only the fuse or the defuse ends it now.
     if (teamAlive(match, def) === 0) { endRound(match, atk, 'Defenders eliminated', events); return; }
     if (match.device.fuse <= 0) {
       match.device.state = 'exploded';
@@ -226,7 +226,7 @@ function stepChannel(match, dt, events) {
   }
 }
 
-// One fixed step of the whole match. input is the real input module for the player,
+// One fixed step of the whole match.
 export function stepMatch(match, dt, ctx) {
   const { boxes, events, input } = ctx;
   match.time += dt;
@@ -234,7 +234,7 @@ export function stepMatch(match, dt, ctx) {
 
   if (match.phase === 'buy' || match.phase === 'result') {
     match.phaseTime -= dt;
-    // The player may walk during buy; bots hold at spawn until the round goes live,
+    // The player may walk during buy; bots hold at spawn.
     if (player.alive && input) stepPlayer(match, player, input, dt, boxes, events);
     for (const a of match.actors) {
       stepWeapon(a.weapon, dt);

@@ -33,7 +33,7 @@ const scene = new THREE.Scene();
 const envTex = envTexture();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromEquirectangular(envTex).texture;
-scene.environmentIntensity = 0.7;
+scene.environmentIntensity = 0.55;
 scene.background = envTex;
 scene.backgroundIntensity = 1.0;
 scene.fog = new THREE.Fog(0xe6edf2, 80, 160);
@@ -42,9 +42,9 @@ scene.add(camera);
 const vmLight = new THREE.PointLight(0xfff1cf, 2.6, 4.5, 1.4); // viewmodel fill light
 camera.add(vmLight);
 
-const hemi = new THREE.HemisphereLight(0xbfd9ea, 0xe6d3ac, 0.5); // pale sky over warm floor bounce
+const hemi = new THREE.HemisphereLight(0xaecfe8, 0xd9d2b0, 0.42); // cool sky fill under the warm key
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff1d8, 3.0);
+const sun = new THREE.DirectionalLight(0xfff6e6, 3.5);
 sun.position.set(12, 32, 8);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -54,7 +54,7 @@ sun.shadow.camera.far = 100;
 sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.02;
 scene.add(sun);
-// Practicals: gentle warm accents at the vestibule, the conservatory and both
+// Practicals: warm accents.
 for (const [x, y, z, c, i, d] of [
   [0, 3.4, 16, 0xfff1cf, 14, 14], [0, 3.4, -16, 0xfff1cf, 14, 14],
   [-17, 3.4, -15, 0xffe2b0, 12, 14], [18, 3.4, -15, 0xffe2b0, 12, 14],
@@ -79,7 +79,7 @@ const player = match.actors.find((a) => a.isPlayer);
 const figures = new Map();
 const teamCount = { siphon: 0, still: 0 };
 for (const a of match.actors) if (!a.isPlayer) a.teamIdx = teamCount[a.team]++;
-// Roles rotate with the round, so all six reference roles take the field over
+// Roles rotate with the round.
 let figRound = match.round;
 function buildFigure(a) {
   const fig = createFigure(a.team, (a.teamIdx + figRound - 1) % 3);
@@ -98,6 +98,9 @@ function rebuildFigures() {
 }
 const deviceMesh = createDevice();
 scene.add(deviceMesh.group);
+// Amber light thrown by the planted Leech.
+const deviceLight = new THREE.PointLight(0xff9500, 0, 4.5, 1.8);
+scene.add(deviceLight);
 const grenadeMeshes = [];
 {
   const geo = new THREE.SphereGeometry(0.09, 10, 8);
@@ -199,7 +202,7 @@ function processEvents(now) {
   for (const e of events) {
     switch (e.kind) {
       case 'shot': {
-        // Bots get a world-space muzzle flash; the player's own flash is the
+        // Bots get a world-space muzzle flash.
         if (!e.actor.isPlayer) spawnFlash(muzzleOf(e.actor), 1);
         if (e.actor.isPlayer) {
           audio.shot(e.weapon);
@@ -380,7 +383,7 @@ function stageShot(n) {
   const enemies = match.actors.filter((a) => a.team === 'still');
   const stillInput = scriptedInput();
   if (n === '1') {
-    // Live firefight in the Grand Hall, round 1: player on the carpet runner, an
+    // Grand Hall firefight, round 1.
     match.phase = 'live'; match.phaseTime = 74;
     givePrimary(player, 'bastion5', 0.7);
     player.health = 62;
@@ -393,17 +396,25 @@ function stageShot(n) {
     place(enemies[2], 10.8, -3.5, Math.PI);
     for (let i = 0; i < 30; i++) stepMatch(match, STEP, { boxes, events, input: stillInput });
     events.length = 0;
-    // One live exchange, frozen mid-flash.
+    // One live exchange, frozen mid-burst.
     const e = enemies.find((x) => x.alive) ?? enemies[0];
     e.yaw = Math.atan2(-(player.pos.x - e.pos.x), -(player.pos.z - e.pos.z));
-    e.pitch = -0.26; // flash at chest, face clear
-    fireWeapon(match, e, eyeOf(e), lookDir(e), boxes, rng, events);
-    fireWeapon(match, player, eyeOf(player), lookDir(player), boxes, rng, events);
+    e.pitch = -0.10; // rounds land on the player's torso line, face clear
+    e.health = 100;
+    player.health = 100;
+    const burst = (a) => { for (let i = 0; i < 3; i++) { a.weapon.cooldown = 0; fireWeapon(match, a, eyeOf(a), lookDir(a), boxes, rng, events); } };
+    burst(e); burst(player);
     processEvents(match.time);
+    match.feed.length = 0; // no stale feed lines
     player.alive = true;
     player.health = 62; // pin the staged state last: in the fight, not fresh, not dead
+    e.alive = true; e.health = 70; e.deadTime = 0; // the shooter stays up, mid-burst
+    for (const a of match.actors) if (!a.alive) a.deadTime = 0.6; // a fallen figure sells the fight
+    place(allies[1], -1.8, 0.8, 0.95); // second ally advancing into the sightline
+    allies[1].walkPhase = 2.4; // mid-stride
+    player.crouch = true; // lower camera, looking up the hall
   } else if (n === '2') {
-    // Plant channel at Site A: the player plants at the socket with the Leech
+    // Plant channel at Site A.
     match.phase = 'live'; match.phaseTime = 58;
     match.planSite = 'A';
     match.device.carrier = player;
@@ -423,8 +434,15 @@ function stageShot(n) {
     for (let i = 0; i < 12; i++) { player.intent = 'plant'; stepMatch(match, STEP, { boxes, events, input: holdE }); }
     events.length = 0;
     player.intent = 'plant';
+    // The covering ally opens fire down the east door.
+    const cover = allies[0];
+    givePrimary(cover, 'rill24', 0.9);
+    cover.yaw = -1.51; cover.pitch = -0.03; // onto the Stillguard at the far door
+    for (let i = 0; i < 3; i++) { cover.weapon.cooldown = 0; fireWeapon(match, cover, eyeOf(cover), lookDir(cover), boxes, rng, events); }
+    processEvents(match.time);
+    for (const a of match.actors) if (!a.alive) a.deadTime = 0.6;
   } else if (n === '3') {
-    // Defensive retake at Site B, round 2: Leech planted, an ally defuses under
+    // Retake at Site B, round 2.
     match.round = 2;
     match.score.siphon = 1; match.score.still = 0;
     match.phase = 'planted';
@@ -447,7 +465,7 @@ function stageShot(n) {
     events.length = 0;
     allies[0].intent = 'defuse';
   } else if (n === '4') {
-    // Buy phase at the Entrance Vestibule porter's desk, round 3, a lost round.
+    // Buy phase at the porter's desk, round 3.
     match.round = 3;
     match.score.siphon = 1; match.score.still = 1;
     match.phase = 'buy'; match.phaseTime = 8;
@@ -479,12 +497,15 @@ function syncScene(now) {
     fig.pose(a.alive ? a.walkPhase : 0, a.crouch ? 1 : 0, a.alive ? 0 : Math.min(1, a.deadTime * 2), now);
     g.visible = true;
   }
-  // Device: on the carrier's back, on the ground where dropped, or on the socket.
+  // Device: carried, dropped, or on the socket.
   const d = match.device;
   const planting = match.channel?.kind === 'plant' ? match.channel : null;
+  deviceLight.intensity = 0;
   if (planting) {
     // Mid-plant the Leech is on the socket, opening.
     const s = SITES[planting.site].socket;
+    deviceLight.position.set(s.x, 1.1, s.z);
+    deviceLight.intensity = 5;
     deviceMesh.group.position.set(s.x, 0, s.z);
     deviceMesh.group.rotation.y = 0;
     deviceMesh.setPlanted(0.3 + 0.7 * (planting.t / planting.need));
@@ -496,6 +517,8 @@ function syncScene(now) {
     deviceMesh.setCarried();
     deviceMesh.group.visible = !c.isPlayer;
   } else if (d.state === 'planted' || d.state === 'defused' || d.state === 'exploded') {
+    deviceLight.position.set(d.pos.x, 1.1, d.pos.z);
+    deviceLight.intensity = 5;
     deviceMesh.group.position.set(d.pos.x, 0, d.pos.z);
     deviceMesh.group.rotation.y = 0;
     deviceMesh.setPlanted(Math.max(0, d.fuse) / 30);
@@ -530,7 +553,7 @@ function syncScene(now) {
     const kick = (player.recoilPitch || 0) * 0.012;
     viewmodel.group.position.set(0.26, -0.22 - (w.reloading > 0 ? 0.09 : 0) + kick * 0.4, -0.45 + kick);
     viewmodel.group.rotation.x = kick + (w.reloading > 0 ? -0.5 : 0);
-    if (viewmodel.flash.material.opacity > 0) viewmodel.flash.material.opacity = Math.max(0, viewmodel.flash.material.opacity - 0.35);
+    if (!shot && viewmodel.flash.material.opacity > 0) viewmodel.flash.material.opacity = Math.max(0, viewmodel.flash.material.opacity - 0.35);
     viewmodel.group.visible = player.alive;
   }
 }

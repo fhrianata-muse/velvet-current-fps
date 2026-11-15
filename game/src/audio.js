@@ -28,7 +28,7 @@ export function createAudio() {
     return buffer;
   }
 
-  // A short filtered noise burst: the body of every gunshot and the explosion.
+  // Filtered noise burst: gunshots, explosions.
   function burst({ dur = 0.12, freq = 1800, gain = 0.5, type = 'lowpass', sweepTo = 0 }) {
     if (!ensure()) return;
     const t = ctx.currentTime;

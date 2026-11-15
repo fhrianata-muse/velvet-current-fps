@@ -154,7 +154,7 @@ function moveToward(match, bot, tx, tz, dt, boxes, crouch = false) {
   const targetYaw = Math.atan2(-dx, -dz);
   bot.yaw = turnToward(bot.yaw, targetYaw, dt * 7);
   moveActor(boxes, bot, dx / d, dz / d, dt);
-  // Stuck detection: commanded to move but barely moving (a wedged bot's speed
+  // Stuck detection: commanded to move but barely moving.
   const moved = Math.hypot(bot.pos.x - bot.brain.lastX, bot.pos.z - bot.brain.lastZ);
   if (moved < 0.02) bot.brain.stuckT += dt; else bot.brain.stuckT = 0;
   bot.brain.lastX = bot.pos.x;
@@ -208,7 +208,7 @@ export function stepBot(match, bot, dt, ctx) {
       if (b.target !== seen) { b.target = seen; b.reactT = 0.3 + rng() * 0.15; b.burstLeft = 0; b.pauseT = 0; }
       b.lastSeen = { x: seen.pos.x, z: seen.pos.z, t: match.time };
       b.seenAt = match.time;
-      // Callout: teammates learn the position 0.7 s later (delivered via match time).
+      // Callout: teammates learn the position 0.7 s later.
       for (const mate of match.actors) {
         if (mate.isPlayer || mate === bot || mate.team !== bot.team || !mate.brain) continue;
         mate.brain.pendingCallout = { x: seen.pos.x, z: seen.pos.z, at: match.time + 0.7 };
@@ -233,7 +233,7 @@ export function stepBot(match, bot, dt, ctx) {
     }
   }
 
-  // Lost sight for 1.5 s: drop the target, keep the last known position.
+  // Lost sight 1.5 s: drop target, keep last position.
   if (b.target && match.time - b.seenAt > 1.5) {
     b.target = null;
     if (b.lastSeen) b.investigate = { x: b.lastSeen.x, z: b.lastSeen.z, t: match.time };
@@ -274,7 +274,7 @@ export function stepBot(match, bot, dt, ctx) {
     const dist = Math.hypot(dx, dz);
     const targetYaw = Math.atan2(-dx, -dz);
     bot.yaw = turnToward(bot.yaw, targetYaw, dt * 9);
-    // Aim at the chest, with the bot's aim error and its accumulated recoil.
+    // Aim at the chest, with aim error and recoil.
     const eye = eyeOf(bot);
     const err = (0.8 + (bot.recoilPitch || 0)) * Math.PI / 180;
     const aimY = t.groundY + 1.15 + (rng() - 0.5) * 0.2;

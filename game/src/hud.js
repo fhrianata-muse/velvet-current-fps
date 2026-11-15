@@ -32,7 +32,7 @@ export function createHud() {
   let lastFeed = [];
   let buyHandler = null;
 
-  // Build the buy cards once; update() refreshes prices, ownership and balance.
+  // Build the buy cards once.
   for (const { item, key } of BUY_ITEMS) {
     const def = item === 'grenade' ? GRENADE : WEAPONS[item];
     const card = document.createElement('div');
@@ -91,7 +91,7 @@ export function createHud() {
       const aliveA = match.actors.filter((a) => a.team === 'siphon' && a.alive).length;
       const aliveB = match.actors.filter((a) => a.team === 'still' && a.alive).length;
       els.alive.textContent = `SIPHON ${aliveA} alive · STILLGUARD ${aliveB} alive`;
-      // Objective line: where the Leech is and what it is doing.
+      // Objective line.
       if (match.device.state === 'planted') {
         els.objective.innerHTML = `Pulse Leech <b>planted at ${match.device.site}</b> — ${fmtTime(match.device.fuse)}`;
       } else if (match.device.state === 'dropped') {
@@ -119,7 +119,7 @@ export function createHud() {
       els.crosshair.style.setProperty('--gap', `${spreadPx.toFixed(1)}px`);
       els.hitmarker.classList.toggle('on', now < hitUntil);
       els.banner.hidden = now >= bannerUntil;
-      // Interaction ring: the player's own channel, or a teammate's in view.
+      // Interaction ring: own channel, or a teammate's.
       const ch = match.channel;
       if (ch && ch.actor.isPlayer) {
         els.interact.hidden = false;
@@ -161,7 +161,7 @@ export function createHud() {
           card.querySelector('.owned-line').textContent = owned ? 'OWNED' : '';
         }
       }
-      // Optional bot-state overlay (Tab): state labels that must match behaviour.
+      // Bot-state overlay (Tab).
       if (!els.botstates.hidden) {
         els.botstates.textContent = match.actors
           .filter((a) => !a.isPlayer)
