@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Velvet Current — a three.js tactical FPS</title>
+<title>Saintmere Hall — a three.js tactical FPS</title>
 <style>
   /* Instrument-panel HUD: petrol translucent panels, ivory rules, brass corners. */
   :root {
-    --jade: #287f78;
-    --coral: #d97668;
-    --ivory: #e8dfc8;
-    --ivory-dim: #cfc4a6;
-    --brass: #b58a45;
-    --petrol: #18343d;
-    --plum: #493447;
-    --panel: rgba(24, 52, 61, 0.78);
+    --jade: #1f4d46;
+    --coral: #9e2434;
+    --ivory: #e9e2d0;
+    --ivory-dim: #d6c9a8;
+    --brass: #c9a227;
+    --petrol: #2b2f36;
+    --plum: #22355c;
+    --panel: rgba(35, 39, 46, 0.80);
     --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
     --font-readout: ui-monospace, 'SF Mono', Menlo, monospace;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #10222a; color: var(--ivory); font-family: var(--font-ui); }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #23272e; color: var(--ivory); font-family: var(--font-ui); }
   #game, #game canvas { position: fixed; inset: 0; display: block; }
   #hud { position: fixed; inset: 0; pointer-events: none; }
   .panel {
@@ -108,14 +108,14 @@
   .card .role { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ivory-dim); }
   .card .price { font-family: var(--font-readout); color: var(--brass); margin-top: 6px; }
   .card .key { float: right; font-family: var(--font-readout); font-size: 11px; color: var(--ivory-dim); border: 1px solid rgba(232,223,200,0.3); padding: 0 4px; }
-  .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(13, 27, 34, 0.82); pointer-events: auto; }
+  .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(24, 26, 30, 0.82); pointer-events: auto; }
   .overlay[hidden] { display: none; }
   .sheet { width: min(520px, 92vw); padding: 28px 30px; }
   .sheet h1 { margin: 0 0 6px; font-size: 30px; font-weight: 600; letter-spacing: 0.03em; }
   .sheet p { margin: 0 0 16px; color: var(--ivory-dim); line-height: 1.55; font-size: 14px; }
   .sheet button {
     font: inherit; font-weight: 600; padding: 11px 18px; cursor: pointer;
-    background: var(--brass); color: #14262e; border: 1px solid var(--brass); border-radius: 3px;
+    background: var(--brass); color: #26221a; border: 1px solid var(--brass); border-radius: 3px;
   }
   .sheet button:hover { background: var(--ivory); }
   .keys { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; color: var(--ivory-dim); }
@@ -172,7 +172,7 @@
 <div id="vignette"></div>
 
 <div id="buymenu" class="panel" hidden>
-  <h2>Ticket Counter — Buy</h2>
+  <h2>Porter's Desk — Buy</h2>
   <div class="sub">Round <span id="buy-round">1</span> · Balance <span id="buy-balance">¤ 800</span> · <span id="buy-timer">10</span>s left · keys 2–5 or click</div>
   <div id="buy-result"></div>
   <div class="cards" id="buy-cards"></div>
@@ -180,8 +180,8 @@
 
 <div id="overlay" class="overlay">
   <section class="sheet panel" role="dialog" aria-modal="true">
-    <h1 id="overlay-title">Velvet Current</h1>
-    <p id="overlay-copy">The Ninth Bath runs the district's power. The Siphon mean to overload a regulator; the Stillguard mean to stop them. First to 4 rounds. You attack on odd rounds, defend on even ones.</p>
+    <h1 id="overlay-title">Saintmere Hall</h1>
+    <p id="overlay-copy">The great library-mansion of Saintmere keeps the city's memory — and its master regulator. The Siphon mean to overload it with a Pulse Leech; the Stillguard mean to stop them. First to 4 rounds. You attack on odd rounds, defend on even ones.</p>
     <button id="play" type="button">Click to play</button>
     <ul class="keys">
       <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move · <kbd>Mouse</kbd> Look</li>

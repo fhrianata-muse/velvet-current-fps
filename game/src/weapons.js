@@ -65,8 +65,7 @@ function applyDamage(match, target, amount, attacker, head, events) {
   }
 }
 
-// Fire one trigger pull. dir is the shooter's exact look direction; spread is applied
-// here from the shooter's speed. Returns events; tracer endpoints ride on 'shot' events.
+// Fire one trigger pull; spread is applied here from the shooter's speed.
 export function fireWeapon(match, shooter, origin, dir, boxes, rng, events) {
   const w = shooter.weapon;
   const def = w.def;

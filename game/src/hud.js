@@ -1,4 +1,4 @@
-// The HUD: DOM panels in the bathhouse instrument style. It only reads match state and
+// The HUD: DOM panels in the mansion instrument style. It only reads match state and
 // writes changed text — all rules live in game.js. The crosshair gap is driven by the
 // shooter's real spread, so the cost of moving fire is visible, not just simulated.
 import { WEAPONS, GRENADE, RULES, attackTeam } from './state.js';
@@ -126,13 +126,13 @@ export function createHud() {
       if (ch && ch.actor.isPlayer) {
         els.interact.hidden = false;
         const frac = Math.min(1, ch.t / ch.need);
-        els.ring.style.background = `conic-gradient(var(--ivory) ${frac * 360}deg, rgba(232,223,200,0.18) 0deg)`;
+        els.ring.style.background = `conic-gradient(var(--ivory) ${frac * 360}deg, rgba(233,226,208,0.18) 0deg)`;
         els.interactPct.textContent = `${Math.round(frac * 100)}%`;
         els.interactLabel.textContent = ch.kind === 'plant' ? 'Planting the Pulse Leech' : 'Defusing the Pulse Leech';
       } else if (ch) {
         els.interact.hidden = false;
         const frac = Math.min(1, ch.t / ch.need);
-        els.ring.style.background = `conic-gradient(var(--brass) ${frac * 360}deg, rgba(232,223,200,0.18) 0deg)`;
+        els.ring.style.background = `conic-gradient(var(--brass) ${frac * 360}deg, rgba(233,226,208,0.18) 0deg)`;
         els.interactPct.textContent = `${Math.round(frac * 100)}%`;
         els.interactLabel.textContent = ch.kind === 'plant' ? `${ch.actor.id} is planting` : `${ch.actor.id} is defusing`;
       } else {

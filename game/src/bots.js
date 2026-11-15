@@ -314,6 +314,11 @@ export function stepBot(match, bot, dt, ctx) {
   if (match.phase === 'live' && bot.team === atk && match.device.carrier === bot) {
     const s = SITES[match.planSite];
     if (bot.pos.x > s.x0 && bot.pos.x < s.x1 && bot.pos.z > s.z0 && bot.pos.z < s.z1) {
+      if (Math.hypot(bot.pos.x - s.socket.x, bot.pos.z - s.socket.z) > 1.6) {
+        b.state = 'route';
+        moveToward(match, bot, s.socket.x, s.socket.z, dt, boxes);
+        return;
+      }
       b.state = 'plant';
       b.intent = 'plant';
       moveActor(boxes, bot, 0, 0, dt);

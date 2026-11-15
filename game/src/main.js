@@ -1,4 +1,4 @@
-// Velvet Current — boot and the one loop. A fixed 60 Hz simulation (state.js STEP)
+// Saintmere Hall — boot and the one loop. A fixed 60 Hz simulation (state.js STEP)
 // feeds a render at the display's rate. This module owns the three.js scene, the
 // transient effects (tracers, flashes, impacts), the audio wiring, the player's own
 // actions, and the ?shot=1..4 staged captures: each shot puts the match into a real
@@ -28,7 +28,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 1.08;
 document.getElementById('game').appendChild(renderer.domElement);
 
 initTextures(renderer.capabilities.getMaxAnisotropy());
@@ -37,19 +37,19 @@ const scene = new THREE.Scene();
 const envTex = envTexture();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromEquirectangular(envTex).texture;
-scene.environmentIntensity = 0.55;
+scene.environmentIntensity = 0.7;
 scene.background = envTex;
-scene.backgroundIntensity = 0.82;
-scene.fog = new THREE.Fog(PALETTE.petrol, 45, 120);
+scene.backgroundIntensity = 1.0;
+scene.fog = new THREE.Fog(0xe6edf2, 80, 160);
 const camera = new THREE.PerspectiveCamera(73, window.innerWidth / window.innerHeight, 0.05, 160);
 scene.add(camera);
 const vmLight = new THREE.PointLight(0xfff1cf, 2.6, 4.5, 1.4); // viewmodel fill light
 camera.add(vmLight);
 
-const hemi = new THREE.HemisphereLight(0xffe9c4, 0x1c3a44, 0.28); // lowered: the environment now fills
+const hemi = new THREE.HemisphereLight(0xbfd9ea, 0xe6d3ac, 0.5); // pale sky over warm floor bounce
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffdfae, 2.4);
-sun.position.set(18, 30, -6);
+const sun = new THREE.DirectionalLight(0xfff1d8, 3.0);
+sun.position.set(12, 32, 8);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -34; sun.shadow.camera.right = 34;
@@ -58,12 +58,12 @@ sun.shadow.camera.far = 100;
 sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.02;
 scene.add(sun);
-// Practicals: warm pools of light at the vestibule, the office and both sites,
-// plus the chandelier's glow over the basin.
+// Practicals: gentle warm accents at the vestibule, the conservatory and both
+// sites, plus the chandelier's glow — the daylight rig does the heavy lifting.
 for (const [x, y, z, c, i, d] of [
-  [0, 3.4, 16, 0xfff1cf, 30, 20], [0, 3.4, -16, 0xfff1cf, 30, 20],
-  [-17, 3.4, -15, 0xffd9a0, 30, 18], [18, 3.4, -15, 0xcfe8dd, 30, 18],
-  [0, 5.2, -1, 0xffd9a0, 26, 18],
+  [0, 3.4, 16, 0xfff1cf, 14, 14], [0, 3.4, -16, 0xfff1cf, 14, 14],
+  [-17, 3.4, -15, 0xffe2b0, 12, 14], [18, 3.4, -15, 0xffe2b0, 12, 14],
+  [0, 5.2, -1, 0xffdf9e, 18, 16],
 ]) {
   const p = new THREE.PointLight(c, i, d, 1.6);
   p.position.set(x, y, z);
@@ -254,7 +254,7 @@ function processEvents(now) {
       }
       case 'match-end':
         hud.showOverlay(
-          e.winner === player.team ? 'THE BATH IS YOURS' : 'THE WARDENS HOLD',
+          e.winner === player.team ? 'THE HALL IS YOURS' : 'THE STILLGUARD HOLD',
           `Final score — Siphon ${match.score.siphon}, Stillguard ${match.score.still}. Click to play again.`,
           'Play again',
         );
@@ -277,7 +277,7 @@ function muzzleOf(actor) {
 const input = createInput(renderer.domElement, (locked) => {
   if (shot) return;
   if (!locked && match.phase !== 'over' && started) {
-    hud.showOverlay('Velvet Current', 'Paused — click to return to the bathhouse.', 'Resume');
+    hud.showOverlay('Saintmere Hall', 'Paused — click to return to the hall.', 'Resume');
   } else if (locked) {
     hud.hideOverlay();
   }
@@ -374,23 +374,24 @@ function stageShot(n) {
   const enemies = match.actors.filter((a) => a.team === 'still');
   const stillInput = scriptedInput();
   if (n === '1') {
-    // Live firefight in the Grand Basin, round 1: player on the pool steps, an enemy
-    // firing from the east island, an ally working the west deck.
+    // Live firefight in the Grand Hall, round 1: player on the carpet runner, an
+    // enemy firing from the west statue's pedestal, an ally working the west side.
     match.phase = 'live'; match.phaseTime = 74;
     givePrimary(player, 'bastion5', 0.7);
     player.health = 62;
-    place(player, 0, 7.6, -0.5);
-    player.groundY = -0.6;
-    place(allies[0], -9.2, 1.5, -1.2);
-    place(allies[1], -1.8, 0.8, -0.7);
-    place(enemies[0], 3.9, 2.4, 2.6);
-    place(enemies[1], 5, -10.6, Math.PI);
-    place(enemies[2], 17, -6, Math.PI);
+    place(player, -0.6, 6.4, 0.45);
+    player.pitch = -0.02;
+    place(allies[0], -6.4, 1.8, -1.1);
+    place(allies[1], 3.2, 5.2, -0.7);
+    place(enemies[0], -3.3, -0.3, 2.6);
+    place(enemies[1], 4.9, 1.8, Math.PI);
+    place(enemies[2], 10.8, -3.5, Math.PI);
     for (let i = 0; i < 30; i++) stepMatch(match, STEP, { boxes, events, input: stillInput });
     events.length = 0;
     // One live exchange, frozen mid-flash: the island enemy fires, the player answers.
     const e = enemies.find((x) => x.alive) ?? enemies[0];
     e.yaw = Math.atan2(-(player.pos.x - e.pos.x), -(player.pos.z - e.pos.z));
+    e.pitch = -0.26; // flash at chest, face clear
     fireWeapon(match, e, eyeOf(e), lookDir(e), boxes, rng, events);
     fireWeapon(match, player, eyeOf(player), lookDir(player), boxes, rng, events);
     processEvents(match.time);
@@ -398,7 +399,7 @@ function stageShot(n) {
     player.health = 62; // pin the staged state last: in the fight, not fresh, not dead
   } else if (n === '2') {
     // Plant channel at Site A: the player plants at the socket with the Leech
-    // deploying in frame; an ally covers the office-door approach to the east.
+    // deploying in frame; an ally covers the conservatory-door approach.
     match.phase = 'live'; match.phaseTime = 58;
     match.planSite = 'A';
     match.device.carrier = player;
@@ -421,7 +422,7 @@ function stageShot(n) {
   } else if (n === '3') {
     // Defensive retake at Site B, round 2: Leech planted, an ally defuses under
     // cover. The camera stands in the B doorway, clear of the walls, looking
-    // straight at the socket with the turbine wheel behind it.
+    // straight at the socket with the armillary behind it.
     match.round = 2;
     match.score.siphon = 1; match.score.still = 0;
     match.phase = 'planted';
@@ -444,7 +445,7 @@ function stageShot(n) {
     events.length = 0;
     allies[0].intent = 'defuse';
   } else if (n === '4') {
-    // Buy phase at the Ticket Vestibule counter, round 3, after a lost round.
+    // Buy phase at the Entrance Vestibule porter's desk, round 3, a lost round.
     match.round = 3;
     match.score.siphon = 1; match.score.still = 1;
     match.phase = 'buy'; match.phaseTime = 8;
@@ -507,7 +508,7 @@ function syncScene(now) {
     m.visible = !!g;
     if (g) m.position.set(g.x, g.y, g.z);
   });
-  // Turbine turns, slowly.
+  // The armillary turns, slowly.
   world.turbine.rotation.z += 0.0016;
   // Camera: the player's eye, with recoil shake and a death drop.
   const eye = eyeOf(player);

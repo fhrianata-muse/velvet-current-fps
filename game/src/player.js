@@ -1,6 +1,6 @@
 // Actor movement, shared by the player and the bots: acceleration and braking, a
 // collision circle resolved per axis against the map's box table, crouching with an
-// eye-height change, and ground height from the floor/ramp table (deck, pool, gallery).
+// eye-height change, and ground height from the floor/ramp table.
 // Accuracy follows the real velocity this produces, so moving fire is honestly worse.
 import { MOVE } from './state.js';
 import { groundHeight, circleBlocked } from './map.js';

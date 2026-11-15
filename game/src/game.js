@@ -170,6 +170,7 @@ function resolveRound(match, events) {
 
 // Plant/defuse channels: one at a time, interrupted by movement or death.
 function stepChannel(match, dt, events) {
+  for (const a of match.actors) if (a.brain) a.intent = a.brain.intent;
   const ch = match.channel;
   if (ch) {
     const a = ch.actor;

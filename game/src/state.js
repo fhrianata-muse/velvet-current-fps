@@ -34,7 +34,7 @@ export const MOVE = {
 };
 
 // Weapon table. Damage is body/head; the head multiplier is 3x for every gun.
-// spreadBase/spreadMove are half-angles in degrees; bloom is added per shot and decays.
+// spreadBase/spreadMove are half-angles in degrees; bloom decays.
 export const WEAPONS = {
   pip9: {
     id: 'pip9', name: 'Pip-9', role: 'Sidearm', price: 0,

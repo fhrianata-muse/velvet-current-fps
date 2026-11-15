@@ -24,8 +24,8 @@ const brassMat = () => new THREE.MeshStandardMaterial({
 // Named proportions (metres). Hip at 0.94, shoulders at 1.50, crown at 1.82.
 const P = { boot: 0.12, thigh: 0.42, shin: 0.40, torsoH: 0.56, torsoW: 0.46, torsoD: 0.28, shoulderW: 0.62, headH: 0.26 };
 const TEAM_LOOK = {
-  siphon: { coat: PALETTE.petrol, limb: PALETTE.petrolLight, plate: PALETTE.coral, shell: PALETTE.petrol, band: PALETTE.coral, pack: PALETTE.brass, visor: PALETTE.petrol },
-  still: { coat: PALETTE.ivory, limb: PALETTE.plumLight, plate: PALETTE.jade, shell: PALETTE.jade, band: PALETTE.jade, pack: PALETTE.plum, visor: PALETTE.jade },
+  siphon: { coat: PALETTE.petrol, limb: PALETTE.petrolLight, plate: PALETTE.coral, shell: PALETTE.petrol, band: PALETTE.coral, pack: PALETTE.coralDark, visor: PALETTE.petrol },
+  still: { coat: PALETTE.ivory, limb: PALETTE.plumLight, plate: PALETTE.plum, shell: PALETTE.plum, band: PALETTE.brass, pack: PALETTE.plum, visor: PALETTE.plum },
 };
 
 export function createFigure(team) {
@@ -66,7 +66,7 @@ export function createFigure(team) {
   const brim = box(0.28, 0.03, 0.12, L.shell, 0, 0.175, -0.19);
   const band = box(0.29, 0.05, 0.31, L.band, 0, 0.175, 0);
   const visor = box(0.17, 0.045, 0.02, L.visor, 0, 0.15, -0.135);
-  visor.material = new THREE.MeshStandardMaterial({ color: L.visor, roughness: 0.35, metalness: 0.2, emissive: team === 'still' ? PALETTE.jade : 0x000000, emissiveIntensity: 0.7, envMapIntensity: 0.5 });
+  visor.material = new THREE.MeshStandardMaterial({ color: L.visor, roughness: 0.35, metalness: 0.2, emissive: team === 'still' ? PALETTE.brass : 0x000000, emissiveIntensity: 0.7, envMapIntensity: 0.5 });
   headG.add(skull, shell, brim, band, visor);
   // Arms jointed at shoulder and elbow, posed onto the gun.
   const arm = (side, reach) => {
@@ -178,7 +178,7 @@ function buildGun(id, detail) {
   const dark = mat(PALETTE.petrol, 0.58), ivory = mat(PALETTE.ivory, 0.55), coral = mat(PALETTE.coral, 0.55);
   const copper = mat(PALETTE.copper, 0.38);
   const worn = new THREE.MeshStandardMaterial({ map: TEX.brass?.map ?? null, color: 0x9c6b3f, roughness: 0.82, metalness: 0.12, envMapIntensity: 0.4 });
-  const gripTex = new THREE.MeshStandardMaterial({ map: TEX.panel?.map ?? null, color: PALETTE.petrol, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.25 });
+  const gripTex = new THREE.MeshStandardMaterial({ map: TEX.wood?.map ?? null, color: PALETTE.petrol, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.25 });
   const lens = new THREE.MeshStandardMaterial({ color: PALETTE.coral, emissive: PALETTE.coral, emissiveIntensity: 0.85, roughness: 0.35 });
   const B = (w, h, d, m, x, y, z, rx = 0) => {
     const q = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
