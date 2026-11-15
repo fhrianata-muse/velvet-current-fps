@@ -159,6 +159,7 @@ function spawnTracer(from, to) {
   const t = fx.tracers.find((x) => x.ttl <= 0) ?? fx.tracers[0];
   const pos = t.line.geometry.attributes.position;
   pos.setXYZ(0, from.x, from.y, from.z);
+  if (shot) to = { x: from.x + (to.x - from.x) * 0.15, y: from.y + (to.y - from.y) * 0.15, z: from.z + (to.z - from.z) * 0.15 }; // stills: a short muzzle streak, never a full-length hairline
   pos.setXYZ(1, to.x, to.y, to.z);
   pos.needsUpdate = true;
   t.line.visible = true;
