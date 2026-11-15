@@ -466,6 +466,7 @@ function syncScene(now) {
   for (const a of match.actors) {
     if (a.isPlayer) continue;
     const fig = figures.get(a.id);
+    fig.setGun(a.weapon.def.id); // the held model follows the bot's bought class
     const g = fig.group;
     g.position.set(a.pos.x, a.groundY, a.pos.z);
     g.userData.groundY = a.groundY;

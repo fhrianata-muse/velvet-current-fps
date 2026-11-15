@@ -482,6 +482,203 @@ export function buildMap(scene) {
   const rail = add(new THREE.CylinderGeometry(0.035, 0.035, 7.2, 10), brassM, 0, 1.24, 14.66);
   rail.rotation.z = Math.PI / 2;
 
-  scene.add(group);
+  // ---- Function dressing: every cover object is a bathhouse object with a job;
+  // the shell gets windows, vents, lintels, lamps, a skylight. Decoration only.
+  const coralM = material(PALETTE.coral, 0, 'none');
+  const clothM = material(PALETTE.ivory, 0, 'plaster');
+  const hazard = (x, y, z, n, alongZ) => {
+    for (let i = 0; i < n; i++) {
+      const o = (i - (n - 1) / 2) * 0.19;
+      add(geoFor(alongZ ? 0.03 : 0.16, 0.09, alongZ ? 0.16 : 0.03), i % 2 ? darkM : coralM, x + (alongZ ? 0 : o), y, z + (alongZ ? o : 0));
+    }
+  };
+  const dialAt = (x, y, z, ry, r = 0.13) => {
+    const d = new THREE.Mesh(new THREE.CircleGeometry(r, 16), dialM);
+    d.position.set(x, y, z); d.rotation.y = ry; group.add(d); return d;
+  };
+  // Basin maintenance islands: filter tank, down-pipe, gauge, valve, hazard ticks.
+  const islandKit = (cx, cz) => {
+    const tank = add(new THREE.CylinderGeometry(0.42, 0.42, 1.7, 16), brassM, cx, 0.70, cz);
+    tank.rotation.z = Math.PI / 2;
+    add(geoFor(0.3, 0.22, 0.8), darkM, cx - 0.55, 0.23, cz);
+    add(geoFor(0.3, 0.22, 0.8), darkM, cx + 0.55, 0.23, cz);
+    add(new THREE.CylinderGeometry(0.07, 0.07, 1.6, 10), pipeM, cx + 1.1, -0.2, cz + 1.2);
+    dialAt(cx - 0.87, 0.70, cz, -Math.PI / 2);
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.025, 8, 18), coralM);
+    wheel.position.set(cx, 1.17, cz); wheel.rotation.x = Math.PI / 2; wheel.castShadow = true; group.add(wheel);
+    hazard(cx, -0.4, cz + 1.52, 10, false);
+  };
+  islandKit(-3, -2.5); islandKit(3, 0.5);
+  // The fountain pedestal: capital slab, lathed bowl, brass spout.
+  add(geoFor(1.95, 0.22, 1.95), ivoryM, 0, 1.68, -1);
+  const bowlPts = [[0.12, 0], [0.5, 0.06], [0.78, 0.22], [0.85, 0.34], [0.8, 0.38], [0.45, 0.26], [0.16, 0.2]]
+    .map(([a, b]) => new THREE.Vector2(a, b));
+  add(new THREE.LatheGeometry(bowlPts, 18), colM, 0, 1.79, -1);
+  add(new THREE.CylinderGeometry(0.05, 0.07, 0.5, 10), brassM, 0, 2.2, -1);
+  // Wheeled laundry carts where the deck crates stood: canvas body, castors, linen.
+  const cart = (cx, cz) => {
+    add(geoFor(1.4, 0.07, 1.4), darkM, cx, 0.2, cz);
+    add(geoFor(1.45, 0.78, 1.45), clothM, cx, 0.62, cz);
+    for (const [sx, sz] of [[-0.72, -0.72], [0.72, -0.72], [-0.72, 0.72], [0.72, 0.72]]) {
+      add(geoFor(0.06, 1.0, 0.06), brassM, cx + sx, 0.55, cz + sz);
+      const w = add(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 12), darkM, cx + sx * 0.86, 0.09, cz + sz * 0.86);
+      w.rotation.x = Math.PI / 2;
+    }
+    const bar = add(new THREE.CylinderGeometry(0.03, 0.03, 1.3, 8), brassM, cx, 1.04, cz + 0.82);
+    bar.rotation.z = Math.PI / 2;
+    add(geoFor(1.3, 0.16, 1.3), clothM, cx + 0.05, 1.09, cz);
+    add(geoFor(0.7, 0.12, 0.8), coralM, cx - 0.25, 1.22, cz + 0.15);
+  };
+  cart(-9.2, 3.5); cart(9.2, -4.5);
+  // Stacked deck chairs where the low crates stood, towels on top.
+  const chairs = (cx, cz) => {
+    for (let i = 0; i < 3; i++) {
+      const seat = add(geoFor(1.5, 0.05, 0.66), i % 2 ? clothM : material(PALETTE.jade, 0, 'plaster'), cx, 0.2 + i * 0.16, cz - 0.18 + i * 0.04);
+      seat.rotation.x = -0.42;
+      const back = add(geoFor(1.5, 0.05, 0.5), i % 2 ? clothM : material(PALETTE.jade, 0, 'plaster'), cx, 0.3 + i * 0.16, cz + 0.32 + i * 0.04);
+      back.rotation.x = 0.55;
+    }
+    add(geoFor(0.8, 0.1, 0.6), coralM, cx + 0.2, 0.72, cz);
+  };
+  chairs(-9.2, -6.5); chairs(9.2, 6.5);
+  // Cloakroom changing bench: slatted seat, towel stacks at both ends.
+  for (let i = 0; i < 4; i++) add(geoFor(4.4, 0.05, 0.18), clothM, -17, 1.09, 8.5 - 0.36 + i * 0.24);
+  add(geoFor(0.9, 0.14, 0.7), clothM, -18.6, 1.18, 8.5);
+  add(geoFor(0.7, 0.1, 0.55), coralM, -15.6, 1.16, 8.5);
+  // Site A plinth as a pump/filter unit: vessels, cross pipe, gauge, hazard ticks.
+  for (const dz of [-0.9, 0.9]) {
+    add(new THREE.CylinderGeometry(0.27, 0.27, 0.72, 14), brassM, -15.6, 1.36, -15.5 + dz);
+    add(new THREE.CylinderGeometry(0.29, 0.29, 0.08, 14), darkM, -15.6, 1.76, -15.5 + dz);
+  }
+  const crossPipe = add(new THREE.CylinderGeometry(0.06, 0.06, 1.8, 10), pipeM, -15.6, 1.62, -15.5);
+  crossPipe.rotation.x = Math.PI / 2;
+  dialAt(-14.97, 0.62, -15.5, Math.PI / 2, 0.14);
+  hazard(-14.98, 0.3, -15.5, 12, true);
+  // Site B cabinet as the dynamo control cabinet: doors, dials, valve, indicator.
+  add(geoFor(0.04, 1.3, 1.24), darkM, 14.68, 0.85, -15.5);
+  add(geoFor(0.04, 1.3, 1.24), darkM, 14.68, 0.85, -14.1);
+  dialAt(14.65, 1.25, -15.5, -Math.PI / 2, 0.11);
+  dialAt(14.65, 1.25, -14.1, -Math.PI / 2, 0.11);
+  const cabWheel = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.024, 8, 18), coralM);
+  cabWheel.position.set(14.66, 0.5, -14.8); cabWheel.rotation.y = Math.PI / 2; cabWheel.castShadow = true; group.add(cabWheel);
+  add(geoFor(0.1, 0.5, 0.1), darkM, 15.9, 1.85, -14.8);
+  add(geoFor(0.16, 0.1, 0.16), material(PALETTE.opal, 1), 15.4, 1.66, -13.6);
+  add(geoFor(0.04, 1.3, 1.24), darkM, 16.12, 0.85, -15.5);
+  add(geoFor(0.04, 1.3, 1.24), darkM, 16.12, 0.85, -14.1);
+  dialAt(16.13, 1.25, -15.5, Math.PI / 2, 0.11);
+  dialAt(16.13, 1.25, -14.1, Math.PI / 2, 0.11);
+  const cabWheel2 = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.024, 8, 18), coralM);
+  cabWheel2.position.set(16.13, 0.5, -14.8); cabWheel2.rotation.y = Math.PI / 2; cabWheel2.castShadow = true; group.add(cabWheel2);
+  // Site B cable spool: two flanges and a wound cable core.
+  for (const dz of [-0.55, 0.55]) {
+    const f = add(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 18), material(PALETTE.jadeDark, 0, 'plaster'), 20.5, 0.62, -17.8 + dz);
+    f.rotation.x = Math.PI / 2;
+  }
+  const spoolCore = add(new THREE.CylinderGeometry(0.42, 0.42, 1.0, 14), darkM, 20.5, 0.62, -17.8);
+  spoolCore.rotation.x = Math.PI / 2;
+  for (const dz of [-0.3, 0, 0.3]) add(new THREE.TorusGeometry(0.43, 0.028, 8, 20), darkM, 20.5, 0.62, -17.8 + dz);
+  // Service Walk housings as pump units: tank on saddles, down pipe, gauge.
+  const pumpUnit = (cx, cz) => {
+    const t = add(new THREE.CylinderGeometry(0.34, 0.34, 2.2, 16), brassM, cx, 1.84, cz);
+    t.rotation.x = Math.PI / 2;
+    add(geoFor(0.5, 0.14, 0.4), darkM, cx, 1.56, cz - 0.8);
+    add(geoFor(0.5, 0.14, 0.4), darkM, cx, 1.56, cz + 0.8);
+    add(new THREE.CylinderGeometry(0.06, 0.06, 1.7, 10), pipeM, cx + 0.55, 0.95, cz + 1.53);
+    dialAt(cx - 0.4, 1.05, cz + 1.53, 0);
+    hazard(cx + 0.1, 0.3, cz + 1.53, 6, false);
+  };
+  pumpUnit(20.4, 3.5); pumpUnit(13.8, -2.5);
+  // Warden desks: overhanging top, drawer unit, ledger stack, brass lamp.
+  const desk = (cx) => {
+    add(geoFor(3.3, 0.07, 1.45), material(PALETTE.plum, 0, 'plaster'), cx, 1.04, -16);
+    add(geoFor(0.8, 0.85, 1.1), darkM, cx - 1.05, 0.45, -16);
+    add(geoFor(0.7, 0.03, 0.9), clothM, cx + 0.7, 1.12, -16.1);
+    add(geoFor(0.55, 0.025, 0.7), coralM, cx + 0.72, 1.16, -16.08);
+    add(new THREE.CylinderGeometry(0.02, 0.03, 0.34, 8), brassM, cx + 1.25, 1.24, -16.3);
+    add(new THREE.CylinderGeometry(0.05, 0.13, 0.1, 12), material(PALETTE.opal, 1), cx + 1.25, 1.44, -16.3);
+  };
+  desk(-4); desk(4);
+  // Vestibule waiting benches: slatted seats, a backrest, a forgotten towel.
+  const wbench = (cx) => {
+    for (let i = 0; i < 3; i++) add(geoFor(2.9, 0.05, 0.24), clothM, cx, 0.94, 17.5 - 0.28 + i * 0.28);
+    const bk = add(geoFor(2.9, 0.4, 0.05), material(PALETTE.plum, 0, 'plaster'), cx, 1.28, 17.98);
+    bk.rotation.x = 0.25;
+    add(geoFor(0.7, 0.09, 0.5), clothM, cx - 0.8, 1.0, 17.5);
+  };
+  wbench(-7.5); wbench(7.5);
+  // Ticket queue rails guiding the line to the counter.
+  for (const sx of [-1, 1]) {
+    for (const px of [0.55, 1.55, 2.55]) add(new THREE.CylinderGeometry(0.035, 0.045, 0.95, 10), brassM, sx * px, 0.48, 13.7);
+    const qr1 = add(new THREE.CylinderGeometry(0.028, 0.028, 2.1, 8), brassM, sx * 1.55, 0.92, 13.7);
+    qr1.rotation.z = Math.PI / 2;
+    const qr2 = add(new THREE.CylinderGeometry(0.022, 0.022, 2.1, 8), brassM, sx * 1.55, 0.55, 13.7);
+    qr2.rotation.z = Math.PI / 2;
+  }
+  // Gallery supports get a capital and a base so they read as columns.
+  for (const sx of [-7.6, 7.6]) {
+    add(geoFor(0.74, 0.18, 0.74), ivoryM, sx, 1.95, -10.5);
+    add(geoFor(0.74, 0.16, 0.74), ivoryM, sx, 0.1, -10.5);
+  }
+  // Lifeguard chair stored in the drained pool, rescue ring on its side.
+  const lg = new THREE.Group();
+  lg.position.set(-6.2, -1, 1.5); lg.rotation.y = Math.PI / 2; group.add(lg);
+  const lgAdd = (geo, m, x, y, z) => { const q = new THREE.Mesh(geo, m); q.position.set(x, y, z); q.castShadow = true; lg.add(q); return q; };
+  for (const [sx, sz] of [[-0.3, -0.25], [0.3, -0.25], [-0.3, 0.25], [0.3, 0.25]]) lgAdd(geoFor(0.06, 2.3, 0.06), ivoryM, sx, 1.15, sz);
+  lgAdd(geoFor(0.75, 0.07, 0.6), ivoryM, 0, 2.3, 0);
+  lgAdd(geoFor(0.75, 0.6, 0.06), ivoryM, 0, 2.66, 0.3);
+  for (let i = 0; i < 3; i++) lgAdd(geoFor(0.6, 0.05, 0.04), brassM, 0, 0.5 + i * 0.45, -0.28);
+  const rescue = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.05, 8, 20), coralM);
+  rescue.position.set(0.45, 1.9, 0); rescue.castShadow = true; lg.add(rescue);
+  // Frosted windows high on the shell walls.
+  const winM = new THREE.MeshStandardMaterial({ color: PALETTE.opal, roughness: 0.4, metalness: 0.05, emissive: PALETTE.opal, emissiveIntensity: 0.38, envMapIntensity: 0.4 });
+  const win = (x, z, ry) => {
+    add(geoFor(1.7, 1.15, 0.09), ivoryM, x, 3.05, z, ry);
+    const p = add(geoFor(1.5, 0.95, 0.1), winM, x, 3.05, z, ry);
+    p.castShadow = false;
+    add(geoFor(0.05, 0.95, 0.11), darkM, x, 3.05, z, ry);
+    add(geoFor(1.5, 0.05, 0.11), darkM, x, 3.05, z, ry);
+  };
+  for (const x of [-20, -14, -8, 8, 14, 20]) win(x, -19.83, 0);
+  for (const x of [-18, 18]) win(x, 12.3, 0);
+  for (const z of [-14, -6, 6, 14]) { win(-23.83, z, Math.PI / 2); win(23.83, z, Math.PI / 2); }
+  // Vent grilles with brass slats under the cornice.
+  const vent = (x, z, ry) => {
+    add(geoFor(1.3, 0.55, 0.07), darkM, x, 4.05, z, ry);
+    for (let i = 0; i < 3; i++) add(geoFor(1.16, 0.06, 0.08), brassM, x, 3.9 + i * 0.15, z, ry);
+  };
+  vent(-3, -19.84, 0); vent(3, -19.84, 0); vent(-17, 12.3, 0); vent(17, 12.3, 0);
+  vent(-23.84, -1, Math.PI / 2); vent(23.84, -1, Math.PI / 2);
+  // Lintels over the doorways that have no arch: connectors, office doors, doors.
+  const lintel = (x, z, ry) => {
+    add(geoFor(2.7, 0.3, 0.5), ivoryM, x, 2.32, z, ry);
+    add(geoFor(2.7, 0.07, 0.54), brassM, x, 2.14, z, ry);
+  };
+  lintel(-11.5, 0, Math.PI / 2); lintel(11.5, 0, Math.PI / 2);
+  lintel(-8, -15.5, Math.PI / 2); lintel(8, -15.5, Math.PI / 2);
+  lintel(-9, 12, 0); lintel(9, 12, 0);
+  // Hanging lamps over each lane, both sites and the office.
+  const lamp = (x, z) => {
+    add(new THREE.CylinderGeometry(0.018, 0.018, 0.85, 8), darkM, x, 4.18, z);
+    add(new THREE.CylinderGeometry(0.05, 0.17, 0.13, 12), darkM, x, 3.72, z);
+    const bulb = add(geoFor(0.16, 0.07, 0.16), material(PALETTE.opal, 1), x, 3.64, z);
+    bulb.castShadow = false;
+  };
+  lamp(-17, 6); lamp(-17, -4); lamp(17, 6); lamp(17, -4);
+  lamp(0, 10.6); lamp(-17.5, -15.5); lamp(17, -15); lamp(0, -16);
+  // Skylight frame grid over the Grand Basin.
+  const sky = [];
+  sky.push(add(geoFor(15.4, 0.16, 0.34), darkM, 0, 5.9, 6.45));
+  sky.push(add(geoFor(15.4, 0.16, 0.34), darkM, 0, 5.9, -8.45));
+  sky.push(add(geoFor(0.34, 0.16, 15.2), darkM, -7.55, 5.9, -1));
+  sky.push(add(geoFor(0.34, 0.16, 15.2), darkM, 7.55, 5.9, -1));
+  for (const bx of [-3.8, 0, 3.8]) sky.push(add(geoFor(0.2, 0.13, 14.6), darkM, bx, 5.88, -1));
+  for (const bz of [-4.5, 2.5]) sky.push(add(geoFor(14.8, 0.13, 0.2), darkM, 0, 5.88, bz));
+  for (const m of sky) m.castShadow = false;
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(14.8, 14.6),
+    new THREE.MeshBasicMaterial({ color: PALETTE.opal, transparent: true, opacity: 0.13, depthWrite: false, side: THREE.DoubleSide }));
+  glass.rotation.x = Math.PI / 2; glass.position.set(0, 5.86, -1); group.add(glass);
+  // Panel rhythm on the vestibule slabs and the office wall segments.
+  for (const px of [-12, 12]) add(geoFor(2.5, 2.1, 0.06), material(PALETTE.coral, 0, 'panel'), px, 1.75, 12.3);
+  pilaster(-4.5, -11.8, 0); pilaster(4.5, -11.8, 0);  scene.add(group);
   return { boxes, turbine };
 }
