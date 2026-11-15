@@ -37,7 +37,7 @@ export function stepWeapon(w, dt) {
       w.reserve -= take;
     }
   }
-  // Bloom recovers after a 120 ms pause since the last shot.
+  // Bloom recovers after a 120 ms pause.
   if (w.bloomIdle > 0) w.bloomIdle -= dt;
   else if (w.bloom > 0) w.bloom = Math.max(0, w.bloom - 3 * dt); // bloom is stored in degrees; recovers at 3 deg/s
 }
@@ -57,6 +57,7 @@ function applyDamage(match, target, amount, attacker, head, events) {
     target.health = 0;
     target.alive = false;
     target.deadTime = 0;
+    if (match.device.carrier === target) { const d = match.device; d.state = 'dropped'; d.pos = { x: target.pos.x, z: target.pos.z }; d.carrier = null; }
     if (attacker && attacker !== target) {
       attacker.money = Math.min(9000, (attacker.money ?? 0) + 200);
       attacker.kills = (attacker.kills ?? 0) + 1;
@@ -65,7 +66,7 @@ function applyDamage(match, target, amount, attacker, head, events) {
   }
 }
 
-// Fire one trigger pull; spread is applied here from the shooter's speed.
+// Fire one trigger pull.
 export function fireWeapon(match, shooter, origin, dir, boxes, rng, events) {
   const w = shooter.weapon;
   const def = w.def;
@@ -87,7 +88,7 @@ export function fireWeapon(match, shooter, origin, dir, boxes, rng, events) {
   events.push({ kind: 'shot', actor: shooter, weapon: def.id });
   match.sounds.push({ x: shooter.pos.x, z: shooter.pos.z, radius: 28, kind: 'shot', team: shooter.team, t: match.time });
   for (let p = 0; p < pellets; p++) {
-    // Uniform point in the spread cone: random direction in the disc around dir.
+    // Uniform point in the spread cone.
     const a = rng() * Math.PI * 2;
     const r = Math.sqrt(rng()) * spread;
     const ux = Math.abs(dir.y) > 0.9 ? 1 : 0;

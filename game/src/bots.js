@@ -1,9 +1,8 @@
 // Bot brains: an explicit state machine the judge can read — route, hold, investigate,
 // engage, plant, defend, defuse — over the map's hand-authored nav graph. Perception is
 // bounded: a 100-degree view cone, 35 m sight with wall occlusion, 300-450 ms reaction,
-// bursts of 3-5 rounds, and sound stimuli (shots 28 m, footsteps 9 m, blasts 35 m) that
-// give an approximate position, never a tracked target. Teammates share a sighting
-// after a 0.7 s callout; each bot still needs its own line of sight to shoot.
+// bursts of 3-5 rounds, and sound stimuli (shots 28 m, footsteps 9 m, blasts 35 m).
+// Teammates share a sighting after a 0.7 s callout; each bot needs its own LOS to shoot.
 import { NODES, NODE_BY_ID, findRoute, nearestNode, raycastBoxes, SITES } from './map.js';
 import { moveActor, eyeOf } from './player.js';
 import { fireWeapon, startReload } from './weapons.js';
@@ -74,8 +73,8 @@ function canSee(match, bot, other, boxes) {
 }
 
 // Assign round roles once, at the buy phase. Attackers: the carrier takes the chosen
-// site lane, the other attacker takes a second lane then rotates in. Defenders: one
-// holds each site, one holds mid/gallery. The plan is visible in how bots move.
+// site lane, the other attacker takes a second lane then rotates in. Defenders hold
+// one per site plus mid/gallery.
 export function assignPlans(match, rng) {
   const atk = attackTeam(match.round);
   const siteId = rng() < 0.55 ? 'A' : 'B';
@@ -113,7 +112,7 @@ export function assignPlans(match, rng) {
   }
 }
 
-// After a plant, defenders converge: nearest defuses, the rest cover the approaches.
+// After a plant, defenders converge: nearest defuses, the rest cover.
 export function assignRetake(match) {
   const defTeam = match.device.site ? match.actors.find((a) => a.alive && a.team !== attackTeam(match.round))?.team : null;
   if (!defTeam) return;
@@ -161,15 +160,17 @@ function moveToward(match, bot, tx, tz, dt, boxes, crouch = false) {
   const targetYaw = Math.atan2(-dx, -dz);
   bot.yaw = turnToward(bot.yaw, targetYaw, dt * 7);
   moveActor(boxes, bot, dx / d, dz / d, dt);
-  // Stuck detection: barely moved while trying — sidestep via a neighbour node.
+  // Stuck detection: commanded to move but barely moving (a wedged bot's speed
+  // reads ~0, so speed must not gate this) — skip the blocked waypoint; at the
+  // route's end, re-route from the nearest node instead.
   const moved = Math.hypot(bot.pos.x - bot.brain.lastX, bot.pos.z - bot.brain.lastZ);
-  if (moved < 0.02 && bot.speed > 0.5) bot.brain.stuckT += dt; else bot.brain.stuckT = 0;
+  if (moved < 0.02) bot.brain.stuckT += dt; else bot.brain.stuckT = 0;
   bot.brain.lastX = bot.pos.x;
   bot.brain.lastZ = bot.pos.z;
   if (bot.brain.stuckT > 1) {
     bot.brain.stuckT = 0;
-    const near = nearestNode(bot.pos.x, bot.pos.z);
-    setRoute(bot, bot.brain.goalNode ?? near);
+    if (bot.brain.routeIdx < bot.brain.route.length - 1) bot.brain.routeIdx++;
+    else setRoute(bot, bot.brain.goalNode ?? nearestNode(bot.pos.x, bot.pos.z));
   }
   return d < 0.7;
 }
@@ -293,7 +294,7 @@ export function stepBot(match, bot, dt, ctx) {
     const dl = Math.hypot(dir.x, dir.y, dir.z) || 1;
     dir.x /= dl; dir.y /= dl; dir.z /= dl;
     bot.pitch = Math.asin(Math.max(-1, Math.min(1, dir.y)));
-    // Brake to shoot: accuracy pays for stillness, for bots as for the player.
+    // Brake to shoot: accuracy pays for stillness.
     moveActor(boxes, bot, 0, 0, dt);
     if (bot.recoilPitch) bot.recoilPitch = Math.max(0, bot.recoilPitch - dt * 6);
     if (b.reactT > 0) { b.reactT -= dt; return; }
