@@ -369,10 +369,10 @@ export function createDevice() {
   const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.14, 12), brassMat(0x8a6d3b));
   cage.position.y = 0.62; cage.castShadow = true; g.add(cage);
   const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.115, 0.52, 14),
-    new THREE.MeshStandardMaterial({ color: PALETTE.winSky, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.1, envMapIntensity: 1.2 }));
+    new THREE.MeshStandardMaterial({ color: 0x9fb6c2, transparent: true, opacity: 0.28, roughness: 0.1, metalness: 0.1, envMapIntensity: 0.35 }));
   glass.position.y = 0.95; g.add(glass);
   const column = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.48, 10),
-    new THREE.MeshStandardMaterial({ color: 0xff7a00, emissive: 0xff7a00, emissiveIntensity: 2.4, roughness: 0.4 }));
+    new THREE.MeshStandardMaterial({ color: 0x5e2400, emissive: 0xd94800, emissiveIntensity: 1.05, roughness: 0.9, envMapIntensity: 0.05 }));
   column.position.y = 0.95; g.add(column);
   const glow = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.014, 6, 32), column.material);
   glow.rotation.x = Math.PI / 2; glow.position.y = 0.078; g.add(glow);
