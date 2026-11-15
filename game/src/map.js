@@ -55,7 +55,7 @@ function buildBoxTable() {
   boxes.push(B(-3, -2.5, 3.3, 0.3, 0.12, 0.5, 'brass')); // island trim
   boxes.push(B(3, 0.5, 3.3, 0.3, 0.12, 0.5, 'brass'));
   // Central fountain column in the basin: breaks the spawn-to-spawn sightline.
-  boxes.push(B(0, -1, 1.7, 1.7, -1, 2.6, 'brassDark'));
+  boxes.push(B(0, -1, 1.7, 1.7, -1, 2.6, 'ivoryDim'));
   // Deck cover crates either side of the basin
   boxes.push(B(-9.2, 3.5, 1.6, 1.6, 0, 1.2, 'plum'));
   boxes.push(B(9.2, -4.5, 1.6, 1.6, 0, 1.2, 'plum'));

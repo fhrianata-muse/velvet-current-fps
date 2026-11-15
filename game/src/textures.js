@@ -105,12 +105,12 @@ function plasterCanvas() {
   const rng = makeRng(7417);
   return cnv(1024, 1024, (x) => {
     x.fillStyle = '#f3ead9'; x.fillRect(0, 0, 1024, 1024);
-    speck(x, rng, 8000, ['rgba(110,95,60,1)', 'rgba(255,255,255,1)'], 0.06);
-    for (let i = 0; i < 24; i++) {
-      x.fillStyle = `rgba(90,80,55,${0.03 + rng() * 0.05})`;
+    speck(x, rng, 8000, ['rgba(110,95,60,1)', 'rgba(255,255,255,1)'], 0.22);
+    for (let i = 0; i < 36; i++) {
+      x.fillStyle = `rgba(90,80,55,${0.10 + rng() * 0.18})`;
       x.fillRect(rng() * 1024, rng() * 300, 2 + rng() * 4, 260 + rng() * 500);
     }
-    grime(x, 1024, 1024, 760, 0.20);
+    grime(x, 1024, 1024, 760, 0.34);
   });
 }
 
@@ -160,9 +160,9 @@ function brassCanvas() {
       const px = rng() * 512, py = rng() * 512, a = rng() * 0.6 - 0.3, l = 12 + rng() * 46;
       x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke();
     }
-    for (let i = 0; i < 12; i++) {
-      x.fillStyle = 'rgba(70,95,80,0.10)';
-      x.beginPath(); x.arc(rng() * 512, rng() * 512, 14 + rng() * 40, 0, 7); x.fill();
+    for (let i = 0; i < 5; i++) {
+      x.fillStyle = 'rgba(70,95,80,0.05)';
+      x.beginPath(); x.arc(rng() * 512, rng() * 512, 10 + rng() * 26, 0, 7); x.fill();
     }
     x.fillStyle = 'rgba(255,244,205,0.20)'; x.fillRect(0, 0, 512, 56);
     x.strokeStyle = 'rgba(255,250,225,0.5)';
@@ -214,8 +214,8 @@ export function gaugeTexture() {
 export function envTexture() {
   const c = cnv(1024, 512, (x) => {
     const g = x.createLinearGradient(0, 0, 0, 512);
-    g.addColorStop(0, '#fff3d2'); g.addColorStop(0.34, '#d9e4cd');
-    g.addColorStop(0.5, '#79a894'); g.addColorStop(0.58, '#2c6e66');
+    g.addColorStop(0, '#18343d'); g.addColorStop(0.34, '#2e5f5c');
+    g.addColorStop(0.5, '#55836e'); g.addColorStop(0.58, '#2c6e66');
     g.addColorStop(0.68, '#27505e'); g.addColorStop(1, '#101f26');
     x.fillStyle = g; x.fillRect(0, 0, 1024, 512);
     const rng = makeRng(1177);
@@ -238,7 +238,7 @@ export function initTextures(aniso) {
   TEX.tile = { map: tx(tileC, 0.5, 0.5), bump: tx(tileCanvas('bump'), 0.5, 0.5, false), rough: tx(tileC, 0.5, 0.5, false) };
   TEX.terrazzo = { map: tx(terrazzoCanvas(), 0.25, 0.25) };
   TEX.panel = { map: tx(panelCanvas(), 1 / 2.4, 1 / 2.4) };
-  TEX.plaster = { map: tx(plasterCanvas(), 1 / 3, 1 / 3) };
+  TEX.plaster = { map: tx(plasterCanvas(), 1 / 2, 1 / 2) };
   TEX.mosaic = { map: tx(mosaicCanvas(), 1 / 14, 1 / 14) };
   const brassC = brassCanvas();
   TEX.brass = { map: tx(brassC, 1, 1), rough: tx(brassC, 1, 1, false) };

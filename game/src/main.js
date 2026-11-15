@@ -452,8 +452,8 @@ function stageShot(n) {
     player.money = 2650;
     givePrimary(player, 'bastion5', 1);
     place(player, 0, 18.2, 0);
-    place(allies[0], -3.4, 14.6, 0.3);
-    place(allies[1], 3.4, 14.6, -0.3);
+    place(allies[0], -3.4, 19.4, 0.3);
+    place(allies[1], 3.4, 19.4, -0.3);
     place(enemies[0], -3, -17.5, Math.PI);
     place(enemies[1], 0, -18.5, Math.PI);
     place(enemies[2], 3, -17.5, Math.PI);
