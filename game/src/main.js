@@ -14,6 +14,7 @@ import { createHud } from './hud.js';
 import { createActors, resetRound, stepMatch, buyItem, equipSlot } from './game.js';
 import { fireWeapon, startReload, throwGrenade, spreadRad, newWeapon } from './weapons.js';
 import { eyeOf, lookDir } from './player.js';
+import { initTextures, envTexture } from './textures.js';
 
 const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
@@ -30,15 +31,22 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
 document.getElementById('game').appendChild(renderer.domElement);
 
+initTextures(renderer.capabilities.getMaxAnisotropy());
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(PALETTE.petrol);
+// Image-based light from the painted sky canvas (core PMREM, no addons).
+const envTex = envTexture();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromEquirectangular(envTex).texture;
+scene.environmentIntensity = 0.55;
+scene.background = envTex;
+scene.backgroundIntensity = 0.82;
 scene.fog = new THREE.Fog(PALETTE.petrol, 45, 120);
 const camera = new THREE.PerspectiveCamera(73, window.innerWidth / window.innerHeight, 0.05, 160);
 scene.add(camera);
 const vmLight = new THREE.PointLight(0xfff1cf, 2.6, 4.5, 1.4); // viewmodel fill light
 camera.add(vmLight);
 
-const hemi = new THREE.HemisphereLight(0xffe9c4, 0x1c3a44, 0.5);
+const hemi = new THREE.HemisphereLight(0xffe9c4, 0x1c3a44, 0.28); // lowered: the environment now fills
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffdfae, 2.4);
 sun.position.set(18, 30, -6);

@@ -5,6 +5,7 @@
 // nodes and edges carries the bots; hold points carry the facing a defender watches.
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';
+import { TEX, signTexture, gaugeTexture } from './textures.js';
 
 // Box: center x/z, width/depth, base height y0, height h, palette key or raw colour.
 // opts: noCollide (decoration), emissive.
@@ -235,18 +236,41 @@ export function circleBlocked(boxes, x, z, radius, feetY, height) {
 }
 
 const METALS = new Set([PALETTE.brass, PALETTE.brassDark, PALETTE.copper]);
+// Which canvas skin each palette colour wears. Panel/plaster canvases are drawn
+// near-white and tinted by colour; tile, terrazzo and brass carry their own hues.
+const TEXKEY = {
+  [PALETTE.jade]: 'tile', [PALETTE.jadeDark]: 'tile',
+  [PALETTE.petrol]: 'panel', [PALETTE.petrolLight]: 'panel',
+  [PALETTE.ivory]: 'panel', [PALETTE.ivoryDim]: 'panel',
+  [PALETTE.coral]: 'plaster', [PALETTE.coralDark]: 'plaster',
+  [PALETTE.plum]: 'plaster', [PALETTE.plumLight]: 'plaster',
+  [PALETTE.brass]: 'brass', [PALETTE.brassDark]: 'brass', [PALETTE.copper]: 'brass',
+  [PALETTE.floor]: 'terrazzo', [PALETTE.deckEdge]: 'panel',
+};
+const UNTINTED = new Set(['tile', 'terrazzo', 'brass', 'mosaic']);
+const ENV_I = { tile: 0.4, plaster: 0.25, panel: 0.3, brass: 1.0, terrazzo: 0.35, lane: 0.3, mosaic: 0.4 };
 const MAT_CACHE = new Map();
-function material(colour, emissive = 0) {
-  const key = colour * 1000 + emissive;
+function material(colour, emissive = 0, texName) {
+  const key = `${colour}|${emissive}|${texName ?? ''}`;
   if (!MAT_CACHE.has(key)) {
     const metal = METALS.has(colour);
-    MAT_CACHE.set(key, new THREE.MeshStandardMaterial({
-      color: colour,
+    const tk = texName === 'none' ? null : (texName ?? TEXKEY[colour]);
+    const t = tk && TEX[tk] ? TEX[tk] : null;
+    const m = new THREE.MeshStandardMaterial({
+      color: t && UNTINTED.has(tk) ? 0xffffff : colour,
       roughness: metal ? 0.38 : 0.88,
-      metalness: metal ? 0.55 : 0.03,
+      metalness: metal ? 0.85 : 0.04,
       emissive: emissive ? colour : 0x000000,
       emissiveIntensity: emissive ? 0.9 : 0,
-    }));
+      envMapIntensity: ENV_I[tk] ?? 0.35,
+    });
+    if (t) {
+      m.map = t.map;
+      if (t.bump) { m.bumpMap = t.bump; m.bumpScale = 0.6; }
+      if (t.rough) { m.roughnessMap = t.rough; m.roughness = tk === 'brass' ? 0.62 : 1; }
+      if (tk === 'brass') m.color.set(colour); // brass canvas is a light base: tint to the fitting's hue
+    }
+    MAT_CACHE.set(key, m);
   }
   return MAT_CACHE.get(key);
 }
@@ -257,7 +281,18 @@ export function buildMap(scene) {
   const boxGeoCache = new Map();
   const geoFor = (w, h, d) => {
     const key = `${w}|${h}|${d}`;
-    if (!boxGeoCache.has(key)) boxGeoCache.set(key, new THREE.BoxGeometry(w, h, d));
+    if (!boxGeoCache.has(key)) {
+      const g = new THREE.BoxGeometry(w, h, d);
+      // World-scale UVs: 1 uv unit = 1 metre per face, so texture repeat alone
+      // sets real-world size and texel density is uniform everywhere.
+      const uv = g.attributes.uv, nor = g.attributes.normal;
+      for (let i = 0; i < uv.count; i++) {
+        const nx = Math.abs(nor.getX(i)), ny = Math.abs(nor.getY(i));
+        const su = nx > 0.5 ? d : w, sv = ny > 0.5 ? d : h;
+        uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv);
+      }
+      boxGeoCache.set(key, g);
+    }
     return boxGeoCache.get(key);
   };
   for (const b of boxes) {
@@ -278,19 +313,8 @@ export function buildMap(scene) {
     const pw = new THREE.Mesh(poolWallGeo, material(PALETTE.jadeDark));
     pw.position.set(sx, -0.5, -1); group.add(pw);
   }
-  const poolFloor = new THREE.Mesh(geoFor(14, 0.1, 14), material(PALETTE.jadeDark));
+  const poolFloor = new THREE.Mesh(geoFor(14, 0.1, 14), material(PALETTE.jadeDark, 0, 'mosaic'));
   poolFloor.position.set(0, -1.05, -1); poolFloor.receiveShadow = true; group.add(poolFloor);
-  // Sunburst mosaic: flat brass/ivory/coral strips radiating on the pool floor.
-  for (let i = 0; i < 16; i++) {
-    const ang = (i / 16) * Math.PI * 2;
-    const strip = new THREE.Mesh(
-      geoFor(0.5, 0.04, 5.6),
-      material(i % 3 === 0 ? PALETTE.brass : i % 3 === 1 ? PALETTE.ivoryDim : PALETTE.coralDark),
-    );
-    strip.position.set(Math.sin(ang) * 3.1, -0.98, -1 + Math.cos(ang) * 3.1);
-    strip.rotation.y = ang;
-    group.add(strip);
-  }
   const gallery = new THREE.Mesh(geoFor(16, 0.25, 3.9), material(PALETTE.deckEdge));
   gallery.position.set(0, 1.87, -10.55); gallery.receiveShadow = true; group.add(gallery);
   // Pool steps and ramps as sloped boxes (visual only; floors handle the walking height).
@@ -309,13 +333,15 @@ export function buildMap(scene) {
     cyl.position.set(cx, 2.2, cz); cyl.castShadow = true; group.add(cyl);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.16, 1.16, 0.25, 20), material(PALETTE.brassDark));
     cap.position.set(cx, 4.5, cz); group.add(cap);
-    const gauge = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.08, 16), material(PALETTE.ivory, 0));
+    const gauge = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.09, 20), material(PALETTE.brassDark));
     gauge.rotation.x = Math.PI / 2; gauge.position.set(cx, 2.6, cz + 1.12); group.add(gauge);
+    const dial = new THREE.Mesh(new THREE.CircleGeometry(0.3, 20), new THREE.MeshStandardMaterial({ map: gaugeTexture(), roughness: 0.5, metalness: 0.1, envMapIntensity: 0.4 }));
+    dial.position.set(cx, 2.6, cz + 1.17); group.add(dial);
     boxes.push(B(cx, cz, 2.2, 2.2, 0, 4.4, 'copper'));
   }
   // Site B turbine: a six-metre wheel that turns slowly behind the socket.
   const turbine = new THREE.Group();
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(3, 0.28, 10, 36), material(PALETTE.jade));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(3, 0.28, 12, 40), material(PALETTE.jade, 0, 'plaster'));
   ring.castShadow = true;
   turbine.add(ring);
   for (let i = 0; i < 6; i++) {
@@ -354,6 +380,108 @@ export function buildMap(scene) {
     ringMesh.position.set(site.socket.x, 0.03, site.socket.z);
     group.add(ringMesh);
   }
+  // ---- Dressing kit (decoration only; nothing here joins the collision table).
+  const ivoryM = material(PALETTE.ivory), brassM = material(PALETTE.brass), colM = material(PALETTE.ivory, 0, 'plaster');
+  const darkM = material(PALETTE.petrol, 0, 'none');
+  const add = (geo, m, x, y, z, ry = 0) => {
+    const q = new THREE.Mesh(geo, m);
+    q.position.set(x, y, z); q.rotation.y = ry;
+    q.castShadow = true; q.receiveShadow = true; group.add(q); return q;
+  };
+  // Lathe columns: basin corners + vestibule pair.
+  const colPts = [[0.36, 0], [0.37, 0.07], [0.25, 0.18], [0.205, 0.6], [0.19, 1.6], [0.20, 2.7], [0.23, 3.2], [0.29, 3.36], [0.31, 3.5], [0.23, 3.58]]
+    .map(([a, b]) => new THREE.Vector2(a, b));
+  const colGeo = new THREE.LatheGeometry(colPts, 20);
+  for (const [x, z] of [[-8.8, 6.4], [8.8, 6.4], [-8.8, -8.4], [8.8, -8.4], [-5.8, 16.8], [5.8, 16.8]]) add(colGeo, colM, x, 0, z);
+  // Pilasters with brass heart-strips; skirting/cornice on the long walls.
+  const pilGeo = geoFor(0.42, 3.4, 0.16), stripGeo = geoFor(0.06, 3.4, 0.05);
+  const pilaster = (x, z, ry) => { add(pilGeo, ivoryM, x, 1.85, z, ry); add(stripGeo, brassM, x + Math.sin(ry) * 0.1, 1.85, z + Math.cos(ry) * 0.1, ry); };
+  for (const x of [-18, -6, 6, 18]) { pilaster(x, -19.82, 0); pilaster(x, 12.34, 0); }
+  for (const z of [-16, -8, 0, 8]) { pilaster(-23.82, z, Math.PI / 2); pilaster(23.82, z, Math.PI / 2); }
+  const skirt = (w, x, z, ry, corn) => {
+    add(geoFor(w, 0.2, 0.09), material(PALETTE.jadeDark), x, 0.1, z, ry);
+    if (corn) add(geoFor(w, 0.24, 0.2), ivoryM, x, 4.42, z, ry);
+  };
+  skirt(47, 0, -19.84, 0, true);
+  skirt(39, -23.84, 0, Math.PI / 2, true); skirt(39, 23.84, 0, Math.PI / 2, false);
+  // Brass nosing around the pool coping.
+  add(geoFor(15.2, 0.07, 0.34), brassM, 0, 0.035, 6.28); add(geoFor(15.2, 0.07, 0.34), brassM, 0, 0.035, -8.28);
+  add(geoFor(0.34, 0.07, 14.9), brassM, -7.28, 0.035, -1); add(geoFor(0.34, 0.07, 14.9), brassM, 7.28, 0.035, -1);
+  // Arched portals at the four doorways: jambs + a half-torus arch band.
+  const archGeo = new THREE.TorusGeometry(0.95, 0.11, 10, 22, Math.PI);
+  const jambGeo = geoFor(0.26, 2.15, 0.34);
+  for (const [x, z] of [[0, 12], [-17, -12], [17, -12], [0, -12]]) {
+    add(jambGeo, ivoryM, x - 1.05, 1.07, z); add(jambGeo, ivoryM, x + 1.05, 1.07, z);
+    const arch = add(archGeo, ivoryM, x, 2.15, z);
+    const lip = add(new THREE.TorusGeometry(1.09, 0.03, 8, 22, Math.PI), brassM, x, 2.15, z);
+    arch.castShadow = lip.castShadow = false;
+  }
+  // Pipe runs: cylinders, torus elbows, brass flanges (A wall, B wall).
+  const pipeM = material(PALETTE.coral);
+  const pipe = (x, y, z, len, axis) => {
+    const p = add(new THREE.CylinderGeometry(0.09, 0.09, len, 14), pipeM, x, y, z);
+    if (axis === 'x') p.rotation.z = Math.PI / 2; else if (axis === 'z') p.rotation.x = Math.PI / 2;
+    return p;
+  };
+  const elbow = (x, y, z, rx, rz) => {
+    const e = add(new THREE.TorusGeometry(0.34, 0.09, 10, 12, Math.PI / 2), pipeM, x, y, z);
+    e.rotation.set(rx, 0, rz); return e;
+  };
+  const flange = (x, y, z, axis) => {
+    const f = add(new THREE.CylinderGeometry(0.15, 0.15, 0.07, 14), brassM, x, y, z);
+    if (axis === 'x') f.rotation.z = Math.PI / 2; else if (axis === 'z') f.rotation.x = Math.PI / 2;
+  };
+  pipe(-17.5, 3.5, -19.8, 9, 'x'); elbow(-22, 3.5, -19.8, 0, Math.PI / 2); elbow(-13, 3.5, -19.8, 0, 0);
+  pipe(-22, 2.6, -19.8, 1.8, 'y'); pipe(-13, 2.6, -19.8, 1.8, 'y');
+  for (const fx of [-20, -17.5, -15]) flange(fx, 3.5, -19.8, 'x');
+  pipe(23.8, 3.3, -15.5, 7, 'z'); elbow(23.8, 3.3, -19, 0, 0); pipe(23.8, 2.4, -19, 1.8, 'y');
+  for (const fz of [-17, -14]) flange(23.8, 3.3, fz, 'z');
+  // Locker door seams, vents and handles on the Cloakroom banks' lane faces.
+  const seamGeo = geoFor(0.96, 1.68, 0.03), ventGeo = geoFor(0.34, 0.05, 0.02), gripGeo = geoFor(0.05, 0.16, 0.04);
+  for (const [lx, lz] of [[-20.6, 4], [-13.4, -1], [-20.6, -6], [-13.4, -9.5]]) {
+    for (const s of [-1.05, 0, 1.05]) {
+      add(seamGeo, darkM, lx + s, 0.95, lz + 0.62);
+      add(ventGeo, darkM, lx + s, 1.62, lz + 0.63);
+      add(gripGeo, brassM, lx + s + 0.34, 0.95, lz + 0.64);
+    }
+  }
+  // Gauge/valve clusters: plate, two dials, one coral valve wheel.
+  const dialTex = gaugeTexture();
+  const dialM = new THREE.MeshStandardMaterial({ map: dialTex, roughness: 0.5, metalness: 0.1, envMapIntensity: 0.4 });
+  const cluster = (x, y, z, ry) => {
+    const g2 = new THREE.Group();
+    g2.position.set(x, y, z); g2.rotation.y = ry; group.add(g2);
+    const plate = new THREE.Mesh(geoFor(0.95, 1.15, 0.08), darkM); g2.add(plate);
+    for (const s of [-0.24, 0.24]) {
+      const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.05, 18), brassM);
+      rim.rotation.x = Math.PI / 2; rim.position.set(s, 0.22, 0.05); g2.add(rim);
+      const dial = new THREE.Mesh(new THREE.CircleGeometry(0.125, 18), dialM);
+      dial.position.set(s, 0.22, 0.08); g2.add(dial);
+    }
+    const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.028, 8, 20), material(PALETTE.coral, 0, 'none'));
+    wheel.position.set(0, -0.28, 0.09); g2.add(wheel);
+    for (let i = 0; i < 3; i++) {
+      const spoke = new THREE.Mesh(geoFor(0.27, 0.03, 0.02), material(PALETTE.coral, 0, 'none'));
+      spoke.position.set(0, -0.28, 0.09); spoke.rotation.z = (i / 3) * Math.PI; g2.add(spoke);
+    }
+  };
+  cluster(-20.5, 1.7, -12.5, 0); cluster(19.15, 1.7, -17.8, -Math.PI / 2); cluster(-4, 1.7, -19.62, 0);
+  // Wayfinding signs over the doorways and the counter.
+  const sign = (text, tab, x, z, ry) => {
+    add(geoFor(2.6, 0.78, 0.1), darkM, x, 3.3, z, ry);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6),
+      new THREE.MeshStandardMaterial({ map: signTexture(text, tab), roughness: 0.6, metalness: 0.05, envMapIntensity: 0.3 }));
+    p.position.set(x + Math.sin(ry) * 0.07, 3.3, z + Math.cos(ry) * 0.07); p.rotation.y = ry; group.add(p);
+  };
+  sign('GRAND BASIN', '#287f78', 0, 11.68, Math.PI);
+  sign('TICKETS', '#b58a45', 0, 12.38, 0);
+  sign('A · HEAT', '#d97668', -17, -12.42, Math.PI);
+  sign('B · DYNAMO', '#287f78', 17, -12.42, Math.PI);
+  // Ticket counter: panelled front and a brass rail along its top edge.
+  for (const s of [-2.3, 0, 2.3]) add(geoFor(2.1, 0.86, 0.04), ivoryM, s, 0.55, 14.62);
+  const rail = add(new THREE.CylinderGeometry(0.035, 0.035, 7.2, 10), brassM, 0, 1.24, 14.66);
+  rail.rotation.z = Math.PI / 2;
+
   scene.add(group);
   return { boxes, turbine };
 }
