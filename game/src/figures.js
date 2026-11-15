@@ -1,4 +1,4 @@
-// Character figures and first-person viewmodels. Figures are jointed builds on
+// Figures and viewmodels.
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';
 import { TEX } from './textures.js';
@@ -12,20 +12,20 @@ const box = (w, h, d, colour, x, y, z, rough) => {
 };
 const gunmetal = () => new THREE.MeshStandardMaterial({
   map: TEX.brass?.map ?? null, roughnessMap: TEX.brass?.rough ?? null,
-  color: PALETTE.petrol, roughness: 1, metalness: 0.72, envMapIntensity: 0.6,
+  color: 0x3a4048, roughness: 0.85, metalness: 0.72, envMapIntensity: 0.9,
 });
-const brassMat = () => new THREE.MeshStandardMaterial({
+const brassMat = (c = PALETTE.brass) => new THREE.MeshStandardMaterial({
   map: TEX.brass?.map ?? null, roughnessMap: TEX.brass?.rough ?? null,
-  color: PALETTE.brass, roughness: 0.62, metalness: 0.9, envMapIntensity: 1,
+  color: c, roughness: 0.62, metalness: 0.9, envMapIntensity: 1,
 });
 
-// Proportions (metres). Hip at 0.94, shoulders at 1.50, crown at 1.82, the
+// Proportions (m): hip 0.94, crown 1.82.
 const P = { boot: 0.12, thigh: 0.42, shin: 0.40, torsoH: 0.56, torsoW: 0.46, torsoD: 0.28 };
 const TEAMS = {
   siphon: { coat: PALETTE.teal, limb: PALETTE.tealDark, accent: PALETTE.orange, hat: PALETTE.tealDark, visor: PALETTE.orange },
   still: { coat: PALETTE.charcoal, limb: PALETTE.charcoalLight, accent: PALETTE.gold, hat: PALETTE.charcoal, visor: 0x2e8f83 },
 };
-// One row per role, in the reference sheet's order. Rifleman / Heavy / Scout
+// Roles per team.
 const ROLES = {
   siphon: [
     { hat: 'fedora', face: 'plain', pads: 1 },
@@ -83,7 +83,7 @@ export function createFigure(team, role = 0) {
     upper.add(box(R.pads === 2 ? 0.19 : 0.16, R.pads === 2 ? 0.13 : 0.10, 0.30, PALETTE.armour, side * (W / 2 + 0.02), 0.50, 0));
     if (R.pads === 2) upper.add(box(0.19, 0.035, 0.31, T.accent, side * (W / 2 + 0.02), 0.565, 0));
   }
-  // Head: skin block, face detail per role, then the role's hat.
+  // Head and hat.
   const headG = new THREE.Group();
   headG.position.y = P.torsoH;
   upper.add(headG);
@@ -106,7 +106,7 @@ export function createFigure(team, role = 0) {
   } else { // helm: dome over the crown, back skirt, accent brow mark
     headG.add(box(0.35, 0.22, 0.35, T.hat, 0, 0.27, 0), box(0.35, 0.16, 0.06, T.hat, 0, 0.14, 0.16), box(0.10, 0.04, 0.02, T.accent, 0, 0.36, -0.18));
   }
-  // Arms jointed at shoulder and elbow, posed onto the gun.
+  // Jointed arms on the gun.
   const arm = (side, reach) => {
     const sh = new THREE.Group();
     sh.position.set(0.285 * side, 0.47, 0);
@@ -120,7 +120,7 @@ export function createFigure(team, role = 0) {
   };
   arm(1, [-0.62, -0.85]); // trigger arm
   arm(-1, [-0.95, -0.55]); // support arm, further forward
-  // The bot's own gun: the world build of its weapon class, swapped by setGun.
+  // The bot's gun, swapped by setGun.
   const gunAnchor = new THREE.Group();
   gunAnchor.position.set(0.14, 0.30, -0.18);
   gunAnchor.scale.setScalar(0.78);
@@ -138,7 +138,7 @@ export function createFigure(team, role = 0) {
   return {
     group: g,
     setGun,
-    // walk: leg swing; crouch: 0..1 compression; dead: 0..1 fall.
+    // Pose: walk/crouch/dead.
     pose(walk, crouch, dead, time) {
       const swing = Math.sin(walk) * 0.5;
       legL.hip.rotation.x = swing - crouch * 0.75;
@@ -155,7 +155,7 @@ export function createFigure(team, role = 0) {
   };
 }
 
-// Hitboxes in world space for an actor standing at pos (feet at groundY).
+// World-space hitboxes.
 export function actorHitboxes(actor) {
   const gy = actor.groundY;
   const c = actor.crouch ? 0.5 : 0;
@@ -166,7 +166,7 @@ export function actorHitboxes(actor) {
   };
 }
 
-// Ray vs one AABB (center + half extents). Returns distance or Infinity.
+// Ray vs AABB; distance or Infinity.
 export function rayAabb(ox, oy, oz, dx, dy, dz, b) {
   let tmin = 0;
   let tmax = Infinity;
@@ -190,7 +190,7 @@ export function rayAabb(ox, oy, oz, dx, dy, dz, b) {
   return tmin;
 }
 
-// ---- Guns: extruded side profiles, one clean silhouette per class — angled
+// ---- Guns: extruded side profiles.
 function prof(pts, thick, m, bev = 0.004) {
   const s = new THREE.Shape();
   pts.forEach((p, i) => {
@@ -213,8 +213,8 @@ function buildGun(id, detail) {
   const dark = mat(PALETTE.petrol, 0.58), ivory = mat(PALETTE.ivory, 0.55), amber = mat(PALETTE.amber, 0.55);
   const copper = mat(PALETTE.copper, 0.38);
   const worn = new THREE.MeshStandardMaterial({ map: TEX.brass?.map ?? null, color: 0x9c6b3f, roughness: 0.82, metalness: 0.12, envMapIntensity: 0.4 });
-  const gripTex = new THREE.MeshStandardMaterial({ map: TEX.wood?.map ?? null, color: PALETTE.petrol, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.25 });
-  const lens = new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 0.85, roughness: 0.35 });
+  const gripTex = new THREE.MeshStandardMaterial({ map: TEX.wood?.map ?? null, color: PALETTE.wood, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.25 });
+  const lens = new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 1.5, roughness: 0.35 });
   const B = (w, h, d, m, x, y, z, rx = 0) => {
     const q = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
     q.position.set(x, y, z); q.rotation.x = rx; g.add(q); return q;
@@ -225,13 +225,13 @@ function buildGun(id, detail) {
     q.position.set(x, y, z); g.add(q); return q;
   };
   const P = (pts, t, m) => { const q = prof(pts, t, m); g.add(q); return q; };
-  // Segmented top rail between shape-x a..b (solid strip on world guns).
+  // Segmented top rail.
   const rail = (a, b, y, t) => {
     if (!detail) { B(t * 0.7, 0.014, b - a, dark, 0, y, -(a + b) / 2); return; }
     const n = Math.max(2, Math.round((b - a) / 0.045));
     for (let i = 0; i < n; i++) B(t * 0.62, 0.016, 0.024, dark, 0, y, -(a + (i + 0.5) * ((b - a) / n)));
   };
-  // Perforation slots on both handguard cheeks.
+  // Handguard slots.
   const slots = (a, b, y, t, n) => {
     if (!detail) return;
     for (let i = 0; i < n; i++) for (const s of [-1, 1]) B(0.004, 0.02, 0.032, dark, s * (t / 2 + 0.001), y, -(a + (i + 0.5) * ((b - a) / n)));
@@ -239,7 +239,7 @@ function buildGun(id, detail) {
   const bead = (x, y) => { const q = new THREE.Mesh(new THREE.SphereGeometry(0.006, 8, 6), br); q.position.set(0, y, -x); g.add(q); };
   let muzzle = 0.3;
   if (id === 'pip9') {
-    // Long slide, raked stippled grip, brass window and base plate.
+    // Pistol.
     P([[0, 0.078], [0.225, 0.078], [0.238, 0.058], [0.238, 0.02], [0.13, 0.014], [0.122, -0.014], [0.158, -0.05, 0.118, -0.056], [0.104, -0.148], [0.09, -0.16, 0.07, -0.16], [0.03, -0.164], [0.006, -0.1, 0, -0.04], [0, 0.02]], 0.05, gm);
     CY(0.014, 0.03, dark, 0, 0.047, -0.245);
     rail(0.03, 0.21, 0.085, 0.028);
@@ -256,7 +256,7 @@ function buildGun(id, detail) {
     B(0.046, 0.012, 0.058, br, 0, -0.167, -0.052, -0.15);
     muzzle = 0.28;
   } else if (id === 'rill24') {
-    // Profiled receiver, skeleton stock, red-dot, twin mags.
+    // SMG.
     P([[-0.03, 0.08], [0.40, 0.08], [0.46, 0.055], [0.575, 0.04], [0.585, 0.005], [0.56, -0.03], [0.40, -0.042], [0.05, -0.048], [-0.03, -0.02]], 0.068, gm);
     B(0.03, 0.018, 0.15, dark, 0, 0.042, 0.098);
     B(0.03, 0.018, 0.15, dark, 0, -0.024, 0.098);
@@ -277,10 +277,11 @@ function buildGun(id, detail) {
         B(0.052, 0.012, 0.056, gm, 0, -0.052 - i * 0.034, -0.475);
       }
       B(0.05, 0.014, 0.03, br, 0, 0.072, 0.045);
+      B(0.05, 0.016, 0.06, br, 0, -0.2, -0.285); // brass magazine base
     }
     muzzle = 0.7;
   } else if (id === 'knell8') {
-    // Copper barrel, ribbed pump, worn stock, shell buttons.
+    // Shotgun.
     P([[-0.02, 0.062], [0.26, 0.062], [0.30, 0.028], [0.30, -0.02], [0.03, -0.048], [-0.02, -0.01]], 0.07, gm);
     P([[-0.315, -0.085], [-0.32, 0.045], [-0.21, 0.07, -0.09, 0.058], [0.0, 0.048], [0.0, -0.028], [-0.13, -0.042], [-0.23, -0.06, -0.315, -0.085]], 0.052, worn);
     B(0.058, 0.138, 0.02, dark, 0, -0.018, 0.324);
@@ -299,9 +300,9 @@ function buildGun(id, detail) {
     }
     muzzle = 0.71;
   } else {
-    // Bastion-5: full stock, vented handguard, aperture sight.
+    // Rifle.
     P([[-0.02, 0.068], [0.30, 0.068], [0.615, 0.052], [0.65, 0.018], [0.65, -0.028], [0.30, -0.052], [0.0, -0.058], [-0.02, -0.02]], 0.064, gm);
-    P([[-0.245, -0.06], [-0.25, 0.04], [-0.17, 0.068, -0.07, 0.062], [0.0, 0.055], [0.0, -0.015], [-0.11, -0.028], [-0.19, -0.045, -0.245, -0.06]], 0.05, dark);
+    P([[-0.245, -0.06], [-0.25, 0.04], [-0.17, 0.068, -0.07, 0.062], [0.0, 0.055], [0.0, -0.015], [-0.11, -0.028], [-0.19, -0.045, -0.245, -0.06]], 0.05, gripTex);
     B(0.056, 0.112, 0.02, dark, 0, -0.008, 0.254);
     P([[0.015, -0.05], [0.055, -0.052], [0.048, -0.145], [0.008, -0.148], [-0.002, -0.06]], 0.04, dark);
     P([[0.155, -0.05], [0.205, -0.05], [0.222, -0.12], [0.232, -0.185, 0.205, -0.215], [0.16, -0.205], [0.148, -0.12, 0.148, -0.055]], 0.044, gm);
@@ -313,6 +314,8 @@ function buildGun(id, detail) {
     B(0.006, 0.045, 0.006, dark, 0, 0.082, -0.60);
     bead(0.60, 0.108);
     if (detail) {
+      B(0.048, 0.014, 0.055, br, 0, -0.213, -0.188); // brass magazine base
+      CY(0.011, 0.006, lens, 0, 0.094, -0.002); // amber aperture lens
       CY(0.024, 0.02, br, 0, 0.01, -0.665); CY(0.024, 0.02, br, 0, 0.01, -0.71);
       B(0.044, 0.01, 0.018, dark, 0, 0.01, -0.862); B(0.044, 0.01, 0.018, dark, 0, 0.01, -0.9);
       B(0.048, 0.01, 0.02, dark, 0, -0.112, -0.2, 0.35); B(0.048, 0.01, 0.02, dark, 0, -0.168, -0.222, 0.5);
@@ -327,7 +330,7 @@ function buildGun(id, detail) {
   return { group: g, muzzle };
 }
 
-// First-person viewmodel: the detailed build, sleeve, muzzle-flash plane.
+// First-person viewmodel.
 export function createViewmodel(weaponId) {
   const built = buildGun(weaponId, true);
   const g = built.group;
@@ -343,7 +346,7 @@ export function createViewmodel(weaponId) {
   return { group: g, flash };
 }
 
-// The Pulse Leech: a brass-and-glass regulator thief on a floor medallion.
+// The Pulse Leech device.
 export function createDevice() {
   const g = new THREE.Group();
   const medallion = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 0.07, 24), brassMat());
@@ -357,22 +360,29 @@ export function createDevice() {
     foot.rotation.y = -i * 2.1;
     g.add(foot);
   }
-  const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.14, 12), brassMat());
+  for (const s of [-1, 1]) { // side canisters
+    const can = cyl(0.05, 0.48, PALETTE.brassDark, s * 0.21, 0.31, 0);
+    can.material = brassMat(0x8a6d3b);
+    g.add(can);
+  }
+  const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.14, 12), brassMat(0x8a6d3b));
   cage.position.y = 0.62; cage.castShadow = true; g.add(cage);
   const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.115, 0.52, 14),
     new THREE.MeshStandardMaterial({ color: PALETTE.winSky, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.1, envMapIntensity: 1.2 }));
   glass.position.y = 0.95; g.add(glass);
   const column = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.48, 10),
-    new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 1.6, roughness: 0.4 }));
+    new THREE.MeshStandardMaterial({ color: PALETTE.amber, emissive: PALETTE.amber, emissiveIntensity: 2.8, roughness: 0.4 }));
   column.position.y = 0.95; g.add(column);
-  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.1, 12), brassMat());
+  const glow = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.014, 6, 32), column.material);
+  glow.rotation.x = Math.PI / 2; glow.position.y = 0.078; g.add(glow);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.1, 12), brassMat(0x8a6d3b));
   cap.position.y = 1.26; cap.castShadow = true; g.add(cap);
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8),
     new THREE.MeshStandardMaterial({ color: PALETTE.opal, emissive: PALETTE.opal, emissiveIntensity: 1.2 }));
   tip.position.y = 1.36; g.add(tip);
   return {
     group: g,
-    // frac: remaining fuse fraction while planted; carried shrinks the core.
+    // Fuse fraction while planted.
     setPlanted(frac) {
       const f = Math.max(0.05, frac);
       column.scale.y = f;

@@ -1,4 +1,4 @@
-// Seeded canvas textures for Saintmere Hall: marble, carpet, book spines, panels,
+// Seeded canvas textures.
 import * as THREE from 'three';
 import { makeRng } from './palette.js';
 
@@ -28,20 +28,20 @@ function speck(x, rng, n, cols, aMax, sMax = 2) {
   x.globalAlpha = 1;
 }
 
-// Warm ivory marble: 2x2 slabs per canvas, gold-grey veining, hairline grout.
+// Marble: slabs, veining, grout.
 function marbleCanvas(mode) {
   const rng = makeRng(mode === 'color' ? 4101 : 4102);
   return cnv(1024, 1024, (x) => {
-    x.fillStyle = mode === 'color' ? '#c9bb9c' : '#333';
+    x.fillStyle = mode === 'color' ? '#8f8266' : '#333';
     x.fillRect(0, 0, 1024, 1024);
     for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
-      const px = i * 512, py = j * 512, v = jit(rng, 0.03);
+      const px = i * 512, py = j * 512, v = jit(rng, 0.07);
       if (mode === 'color') {
-        x.fillStyle = `hsl(43,32%,${74 + v * 100}%)`;
+        x.fillStyle = `hsl(43,30%,${73 + v * 100}%)`;
         x.fillRect(px + 3, py + 3, 506, 506);
         for (let s = 0; s < 7; s++) { // veins wander diagonally, branching faintly
-          x.strokeStyle = `rgba(122,102,64,${0.16 + rng() * 0.20})`;
-          x.lineWidth = 1 + rng() * 2.2;
+          x.strokeStyle = s % 2 ? `rgba(122,102,64,${0.18 + rng() * 0.2})` : `rgba(78,102,88,${0.3 + rng() * 0.25})`;
+          x.lineWidth = 1.2 + rng() * 2.6;
           x.beginPath();
           let vx = px + rng() * 512, vy = py;
           x.moveTo(vx, vy);
@@ -58,11 +58,11 @@ function marbleCanvas(mode) {
   });
 }
 
-// Forest-green carpet: gold diamond lattice, medallion diamonds, double border.
+// Carpet: gold lattice on green.
 function carpetCanvas() {
   const rng = makeRng(5207);
   return cnv(1024, 1024, (x) => {
-    x.fillStyle = '#1e463c'; x.fillRect(0, 0, 1024, 1024);
+    x.fillStyle = '#1a5c3d'; x.fillRect(0, 0, 1024, 1024);
     speck(x, rng, 9000, ['rgba(6,20,14,1)', 'rgba(214,230,200,1)'], 0.06);
     x.strokeStyle = 'rgba(201,162,39,0.4)'; x.lineWidth = 3;
     for (let i = -4; i < 9; i++) {
@@ -79,7 +79,7 @@ function carpetCanvas() {
   });
 }
 
-// Book spines: four shelf rows of cloth bindings in muted classics — forest,
+// Book spines.
 function booksCanvas() {
   const rng = makeRng(6311);
   const cols = ['#1e463c', '#2c3a55', '#c08a3e', '#bfa880', '#6b4a2f', '#274e3a', '#4a3220', '#3d5a80'];
@@ -107,7 +107,7 @@ function booksCanvas() {
   });
 }
 
-// Panelled wall: near-white so material tint decides the room — cream field,
+// Panelled wall.
 function panelCanvas() {
   const rng = makeRng(7417);
   return cnv(1024, 1024, (x) => {
@@ -125,7 +125,7 @@ function panelCanvas() {
   });
 }
 
-// Walnut: warm brown grain with long streaks and the odd knot.
+// Walnut grain.
 function woodCanvas() {
   const rng = makeRng(8521);
   return cnv(512, 512, (x) => {
@@ -143,7 +143,7 @@ function woodCanvas() {
   });
 }
 
-// Card catalogue: a grid of small drawers, each with a brass pull and label.
+// Card catalogue drawers.
 function catalogCanvas() {
   const rng = makeRng(9533);
   return cnv(1024, 768, (x) => {
@@ -161,7 +161,7 @@ function catalogCanvas() {
   });
 }
 
-// Plaster: near-white (tints true), speckle, streaks, grime.
+// Plaster.
 function plasterCanvas() {
   const rng = makeRng(7417 + 9);
   return cnv(1024, 1024, (x) => {
@@ -177,7 +177,7 @@ function plasterCanvas() {
   });
 }
 
-// Brushed brass: streaks, scratches, patina, wear strip. Its luminance is
+// Brushed brass.
 function brassCanvas() {
   const rng = makeRng(9533 + 9);
   return cnv(512, 512, (x) => {
@@ -201,7 +201,7 @@ function brassCanvas() {
   });
 }
 
-// Wayfinding sign: deep-teal field, gold border, ivory capitals, team tab.
+// Wayfinding sign.
 export function signTexture(text, tab) {
   return tx(cnv(1024, 256, (x) => {
     x.fillStyle = '#14332b'; x.fillRect(0, 0, 1024, 256);
@@ -215,7 +215,7 @@ export function signTexture(text, tab) {
   }), 1, 1);
 }
 
-// Regulator dial / wall clock face: ticks, numerals, gilt arc, crimson hand.
+// Dial / clock face.
 export function gaugeTexture() {
   return tx(cnv(512, 512, (x) => {
     x.fillStyle = '#ece1c4'; x.beginPath(); x.arc(256, 256, 250, 0, 7); x.fill();
@@ -238,7 +238,7 @@ export function gaugeTexture() {
   }), 1, 1);
 }
 
-// Painted sky for PMREM + background: pale-blue zenith, bright warm horizon
+// Painted sky for PMREM.
 export function envTexture() {
   const c = cnv(1024, 512, (x) => {
     const g = x.createLinearGradient(0, 0, 0, 512);

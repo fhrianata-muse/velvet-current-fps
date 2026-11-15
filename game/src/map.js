@@ -1,9 +1,9 @@
-// Saintmere Hall: a 48 x 40 m glass-roofed library-mansion. One box table drives
+// Saintmere Hall: 48 x 40 m glass-roofed library-mansion.
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';
 import { TEX, signTexture, gaugeTexture } from './textures.js';
 
-// Box: center x/z, width/depth, base y0, height h, palette key. opts: tex skin.
+// Box: center x/z, w/d, base y0, height h, palette key.
 const B = (x, z, w, d, y0, h, mat, opts = {}) => ({ x, z, w, d, y0, h, mat, ...opts });
 
 export const SITES = {
@@ -11,7 +11,7 @@ export const SITES = {
   B: { id: 'B', name: 'The Gallery', x0: 12.5, x1: 22.5, z0: -18.5, z1: -12.5, socket: { x: 16.5, z: -14.5 } },
 };
 export const SPAWNS = {
-  // Attackers muster in front of the porter's desk, clear of it, facing the doors.
+  // Attackers muster before the porter's desk.
   siphon: [{ x: -3, z: 13.8 }, { x: 0, z: 14.2 }, { x: 3, z: 13.8 }],
   still: [{ x: -3, z: -17.5 }, { x: 0, z: -18.5 }, { x: 3, z: -17.5 }],
 };
@@ -22,25 +22,25 @@ function buildBoxTable() {
   // Perimeter
   wall(0, -20.2, 48.8, 0.6); wall(0, 20.2, 48.8, 0.6);
   wall(-24.2, 0, 0.6, 40.8); wall(24.2, 0, 0.6, 40.8);
-  // South line z=12: vestibule doors west / mid / east
+  // South line z=12: vestibule doors.
   wall(-18, 12, 12, 0.5, 'ivoryDim'); wall(-4, 12, 4, 0.5, 'ivoryDim');
   wall(4, 12, 4, 0.5, 'ivoryDim'); wall(18, 12, 12, 0.5, 'ivoryDim');
-  // Porter's desk in the vestibule (walnut, chest high) — the buy counter.
+  // Porter's desk (walnut) — the buy counter.
   boxes.push(B(0, 15.2, 7, 1.1, 0, 1.1, 'wood'));
   boxes.push(B(0, 15.2, 7.4, 0.25, 1.1, 0.12, 'brassDark'));
-  // Wing side walls x=+-11.5 with mid connector doors at z in [-2,2]
+  // Wing walls x=+-11.5, connector doors z[-2,2].
   wall(-11.5, -7, 0.5, 10, 'ivory'); wall(-11.5, 7, 0.5, 10, 'ivory');
   wall(11.5, -7, 0.5, 10, 'ivory'); wall(11.5, 7, 0.5, 10, 'ivory');
   // North line z=-12: lane ends and site doors.
   wall(-21.5, -12, 5, 0.5, 'ivory'); wall(-13, -12, 4, 0.5, 'ivory');
   wall(-4.5, -12, 5, 0.5, 'ivory'); wall(4.5, -12, 5, 0.5, 'ivory');
   wall(13, -12, 4, 0.5, 'ivory'); wall(21.5, -12, 5, 0.5, 'ivory');
-  // Conservatory side walls x=+-8, z[-20,-12], doors z[-17,-14] to the sites
+  // Conservatory walls x=+-8, doors to the sites.
   wall(-8, -18.5, 0.5, 3, 'ivoryDim'); wall(-8, -12.7, 0.5, 1, 'ivoryDim');
   wall(8, -18.5, 0.5, 3, 'ivoryDim'); wall(8, -12.7, 0.5, 1, 'ivoryDim');
-  // Conservatory tables (defender spawn furniture)
+  // Conservatory tables.
   boxes.push(B(-4, -18.6, 3, 1.2, 0, 1.0, 'wood')); boxes.push(B(4, -18.6, 3, 1.2, 0, 1.0, 'wood'));
-  // Library shelf banks down the west lane (staggered, waist-to-head cover)
+  // Library shelf banks, west lane.
   const shelf = (x, z) => { // plinth, body, cornice: a framed bookcase
     boxes.push(B(x, z, 3.5, 1.45, 0, 0.14, 'oakDark'));
     boxes.push(B(x, z, 3.2, 1.2, 0.14, 1.76, 'wood'));
@@ -64,7 +64,7 @@ function buildBoxTable() {
   boxes.push(B(9.2, -4.5, 1.6, 1.6, 0, 1.2, 'wood'));
   boxes.push(B(-12.8, -6.5, 1.6, 1.6, 0, 0.8, 'navy'));
   boxes.push(B(9.2, 6.5, 1.6, 1.6, 0, 0.8, 'navy'));
-  // Gallery parapet (y=2 deck): two firing openings on the south edge
+  // Gallery parapet (y=2 deck).
   const parapet = (x, w) => boxes.push(B(x, -8.8, w, 0.35, 2, 1.0, 'ivoryDim'));
   parapet(-6, 4); parapet(0.5, 3); parapet(6.5, 3);
   boxes.push(B(0, -12.4, 16, 0.35, 2, 1.0, 'ivoryDim')); // gallery north rail
@@ -73,16 +73,16 @@ function buildBoxTable() {
   for (const sx of [-4.25, 4.25]) boxes.push(B(sx, -12.4, 6.1, 0.35, 0, 2, 'ivory', { tex: 'panel' }));
   boxes.push(B(-7.6, -10.5, 0.5, 4, 0, 2, 'ivory')); // gallery supports
   boxes.push(B(7.6, -10.5, 0.5, 4, 0, 2, 'ivory'));
-  // Library: marble plant plinth and the card-catalogue cabinet
+  // Library: plant plinth, card catalogue.
   boxes.push(B(-19, -13.2, 1.5, 3.5, 0, 0.14, 'ivory', { tex: 'marble' }));
   boxes.push(B(-19, -13.2, 1.2, 3.2, 0, 1.0, 'ivory', { tex: 'marble' }));
   boxes.push(B(-20.5, -12.8, 3.4, 0.4, 0, 2.6, 'wood', { tex: 'catalog' }));
   boxes.push(B(-20.5, -12.8, 3.6, 0.55, 2.6, 0.12, 'oakDark')); // catalogue cornice
-  // Gallery: a glass display case on the back wall, a statue pedestal
+  // Gallery: display case, statue pedestal.
   boxes.push(B(21, -16.5, 1.4, 3.0, 0, 1.6, 'glass'));
   boxes.push(B(20.5, -17.8, 2.9, 1.9, 0, 0.14, 'ivory', { tex: 'marble' }));
   boxes.push(B(20.5, -17.8, 2.6, 1.6, 0, 1.3, 'ivory', { tex: 'marble' }));
-  // East lane: a statue pedestal and a second display case, plus the dogleg teeth
+  // East lane: pedestal, display case, dogleg teeth.
   boxes.push(B(20.4, 3.5, 2.9, 3.3, 0, 0.14, 'ivory', { tex: 'marble' }));
   boxes.push(B(20.4, 3.5, 2.6, 3, 0, 1.5, 'ivory', { tex: 'marble' }));
   boxes.push(B(13.8, -2.5, 1.8, 3, 0, 1.5, 'glass'));
@@ -94,7 +94,7 @@ function buildBoxTable() {
   return boxes;
 }
 
-// Floors: flat regions with a top height. Ramps interpolate along one axis.
+// Floors and ramps.
 const FLOORS = [
   { x0: -24, x1: 24, z0: -20, z1: 20, top: 0 },
   { x0: -8, x1: 8, z0: -12.5, z1: -8.6, top: 2 }, // gallery balcony deck
@@ -158,7 +158,7 @@ export const NODE_BY_ID = new Map(NODES.map((n) => [n.id, n]));
 export const ADJ = new Map(NODES.map((n) => [n.id, []]));
 for (const [a, b] of EDGES) { ADJ.get(a).push(b); ADJ.get(b).push(a); }
 
-// Shortest path over the nav graph (BFS; the graph is tiny).
+// BFS shortest path.
 export function findRoute(fromId, toId) {
   if (fromId === toId) return [fromId];
   const prev = new Map([[fromId, null]]);
@@ -189,7 +189,7 @@ export function nearestNode(x, z) {
   return best.id;
 }
 
-// Ray vs the solid box table (slab test). Returns nearest { dist, x,y,z } or null.
+// Ray vs the box table; nearest hit or null.
 export function raycastBoxes(boxes, ox, oy, oz, dx, dy, dz, maxDist) {
   let best = null;
   for (const b of boxes) {
@@ -225,7 +225,7 @@ export function raycastBoxes(boxes, ox, oy, oz, dx, dy, dz, maxDist) {
   return best;
 }
 
-// Circle vs solid boxes: blocked only by boxes rising past step height whose
+// Circle vs solid boxes.
 export function circleBlocked(boxes, x, z, radius, feetY, height) {
   for (const b of boxes) {
     const top = b.y0 + b.h;
@@ -239,7 +239,7 @@ export function circleBlocked(boxes, x, z, radius, feetY, height) {
 }
 
 const METALS = new Set([PALETTE.brass, PALETTE.brassDark, PALETTE.copper]);
-// Which canvas skin each palette colour wears.
+// Palette colour -> canvas skin.
 const TEXKEY = {
   [PALETTE.forest]: 'panel', [PALETTE.forestDark]: 'panel',
   [PALETTE.petrol]: 'panel', [PALETTE.petrolLight]: 'panel',
@@ -255,7 +255,7 @@ const MAT_CACHE = new Map();
 function material(colour, emissive = 0, texName) {
   const key = `${colour}|${emissive}|${texName ?? ''}`;
   if (!MAT_CACHE.has(key)) {
-    if (colour === 'glass') { // display-case glass: bright, barely there, all reflection
+    if (colour === 'glass') { // display-case glass
       MAT_CACHE.set(key, new THREE.MeshStandardMaterial({
         color: PALETTE.sky, transparent: true, opacity: 0.28, roughness: 0.08,
         metalness: 0.1, envMapIntensity: 1.3, depthWrite: false,
@@ -292,7 +292,7 @@ export function buildMap(scene) {
     const key = `${w}|${h}|${d}`;
     if (!boxGeoCache.has(key)) {
       const g = new THREE.BoxGeometry(w, h, d);
-      // World-scale UVs: 1 uv unit = 1 metre per face, uniform texel density.
+      // World-scale UVs: 1 unit = 1 m per face.
       const uv = g.attributes.uv, nor = g.attributes.normal;
       for (let i = 0; i < uv.count; i++) {
         const nx = Math.abs(nor.getX(i)), ny = Math.abs(nor.getY(i));
@@ -317,7 +317,7 @@ export function buildMap(scene) {
   }
   const gallery = new THREE.Mesh(geoFor(16, 0.25, 3.9), material(PALETTE.deckEdge));
   gallery.position.set(0, 1.87, -10.55); gallery.receiveShadow = true; group.add(gallery);
-  // Twin staircases: sloped beds under the ramps, marble treads, brass handrails.
+  // Twin staircases: beds, treads, handrails.
   const slope = (x, z, w, len, drop, ang) => {
     const m = new THREE.Mesh(geoFor(w, 0.18, len), material(PALETTE.ivoryDim));
     m.position.set(x, drop, z); m.rotation.x = ang; group.add(m);
@@ -334,14 +334,14 @@ export function buildMap(scene) {
     for (const side of [-1.62, 1.62]) {
       const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 7.4, 10), material(PALETTE.brass));
       rail.position.set(sx + side, 1.95, -9); rail.rotation.x = -(Math.PI / 2 - 0.286); group.add(rail);
-      for (let i = 0; i < 3; i++) { // posts sized to meet the rail from the ramp bed
+      for (let i = 0; i < 3; i++) { // posts
         const z = -6.6 - i * 2.6, bed = (-5.6 - z) / 6.8 * 2, top = 1.95 + 0.28 * ((-9 - z) / 0.96);
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, top - bed + 0.12, 8), material(PALETTE.brass));
         post.position.set(sx + side, (bed + top) / 2, z); group.add(post);
       }
     }
   }
-  // Balcony centre steps (conservatory down to the deck): eight marble treads.
+  // Balcony centre steps.
   for (let i = 0; i < 8; i++) {
     const tread = new THREE.Mesh(geoFor(2.4, 0.07, 0.3), treadM);
     tread.position.set(0, 0.14 + i * 0.25, -14.45 + i * 0.27);
@@ -353,7 +353,7 @@ export function buildMap(scene) {
     const pier = new THREE.Mesh(geoFor(2.2, 4.4, 2.2), treadM);
     pier.position.set(cx, 2.2, cz); pier.castShadow = true; pier.receiveShadow = true; group.add(pier);
   }
-  // Site B armillary: a marble globe in gilt rings, turning over its stand.
+  // Site B armillary: globe in gilt rings.
   const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.4, 1.5, 14), treadM);
   stand.position.set(19.5, 0.75, -17.8); stand.castShadow = true; group.add(stand);
   const turbine = new THREE.Group();
@@ -372,7 +372,7 @@ export function buildMap(scene) {
   boxes.push(B(19.5, -18.6, 6.4, 0.8, 0, 6.2, 'ivory'));
   const backWall = new THREE.Mesh(geoFor(6.4, 6.2, 0.8), material(PALETTE.ivory));
   backWall.position.set(19.5, 3.1, -18.6); backWall.receiveShadow = true; group.add(backWall);
-  // Chandelier over the hall: three gilt rings of candle bulbs under the skylight.
+  // Chandelier: three gilt rings of bulbs.
   const chand = new THREE.Group();
   const bulbGeo = new THREE.SphereGeometry(0.055, 8, 6);
   const bulbM = material(PALETTE.opal, 1);
@@ -389,7 +389,7 @@ export function buildMap(scene) {
   rod.position.set(0, 6.35, -1); group.add(rod);
   chand.position.set(0, 0, -1);
   group.add(chand);
-  // Site markers: floor rings at the sockets.
+  // Site floor rings.
   for (const site of [SITES.A, SITES.B]) {
     const disc = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, 0.035, 28), material(PALETTE.brass));
     disc.position.set(site.socket.x, 0.018, site.socket.z); disc.receiveShadow = true; group.add(disc);
@@ -399,7 +399,7 @@ export function buildMap(scene) {
     group.add(ringMesh);
   }
 
-  // ---- Dressing kit (decoration only; nothing here collides).
+  // ---- Dressing kit (decoration only).
   const ivoryM = material(PALETTE.ivory), brassM = material(PALETTE.brass), marbleM = treadM;
   const woodM = material(PALETTE.wood), darkM = material(PALETTE.petrol, 0, 'none');
   const clothM = material(PALETTE.navy, 0, 'plaster'), tealM = material(PALETTE.forest, 0, 'plaster');
@@ -420,7 +420,7 @@ export function buildMap(scene) {
     add(new THREE.CylinderGeometry(0.05, 0.13, 0.11, 12), lampShadeM, x, y + 0.33, z);
     add(geoFor(0.1, 0.03, 0.1), bulbM, x, y + 0.27, z);
   };
-  // Lathe columns: hall corners + vestibule pair, marble with entasis.
+  // Lathe columns.
   const colPts = [[0.36, 0], [0.37, 0.07], [0.25, 0.18], [0.205, 0.6], [0.19, 1.6], [0.20, 2.7], [0.23, 3.2], [0.29, 3.36], [0.31, 3.5], [0.23, 3.58]]
     .map(([a, b]) => new THREE.Vector2(a, b));
   const colGeo = new THREE.LatheGeometry(colPts, 20);
@@ -430,7 +430,7 @@ export function buildMap(scene) {
     c.scale.y = 4.6 / 3.58; // up to the entablature
   }
   for (const sd of [-1, 1]) add(new THREE.CylinderGeometry(0.09, 0.11, 4.6, 10), darkM, sd * 8.3, 2.3, -2.5); // iron posts
-  // Pilasters with brass heart-strips; teal skirting and ivory cornice.
+  // Pilasters, skirting, cornice.
   const pilGeo = geoFor(0.42, 3.4, 0.16), stripGeo = geoFor(0.06, 3.4, 0.05);
   const pilaster = (x, z, ry) => { add(pilGeo, ivoryM, x, 1.85, z, ry); add(stripGeo, brassM, x + Math.sin(ry) * 0.1, 1.85, z + Math.cos(ry) * 0.1, ry); };
   for (const x of [-18, -6, 6, 18]) { pilaster(x, -19.82, 0); pilaster(x, 12.34, 0); }
@@ -453,12 +453,12 @@ export function buildMap(scene) {
     add(geoFor(0.09, 0.2, 10), skirtM, sd * 11.24, 0.1, 7);
     add(geoFor(0.2, 0.24, 8), ivoryM, sd * 7.8, 4.42, -16);
   }
-  // Carpet: the burgundy runner down the hall lane; rugs at both sites, vestibule.
+  // Carpet runner and rugs.
   add(geoFor(3.2, 0.04, 20.4), carpetM, 0, 0.02, 1.5);
   add(geoFor(5.6, 0.04, 4.8), carpetM, -17.5, 0.02, -15.5);
   add(geoFor(5.6, 0.04, 4.8), carpetM, 17, 0.02, -15.2);
   add(geoFor(7.2, 0.04, 4.8), carpetM, 0, 0.02, 17.2);
-  // Arched portals at the four doorways: jambs + a half-torus arch band.
+  // Arched portals at the doorways.
   const archGeo = new THREE.TorusGeometry(0.95, 0.11, 10, 22, Math.PI);
   const jambGeo = geoFor(0.26, 2.15, 0.34);
   for (const [x, z] of [[0, 12], [-17, -12], [17, -12], [0, -12]]) {
@@ -467,13 +467,26 @@ export function buildMap(scene) {
     const lip = add(new THREE.TorusGeometry(1.09, 0.03, 8, 22, Math.PI), brassM, x, 2.15, z);
     arch.castShadow = lip.castShadow = false;
   }
-  // Bookshelf faces: spine planes on the lane banks; tall units on A's north wall.
+  // Bookshelf faces and tall units.
   const booksM = new THREE.MeshStandardMaterial({ map: TEX.books.map, roughness: 0.85, metalness: 0.02, envMapIntensity: 0.2 });
   const booksPlane = (w, h, x, y, z, ry) => {
     const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), booksM);
     p.position.set(x, y, z); p.rotation.y = ry; p.receiveShadow = true; group.add(p);
   };
   const forestM = material(PALETTE.forest, 0, 'panel'), oakM = material(PALETTE.oakDark);
+  // Walnut wainscot (1.1 m) with a brass chair rail grounding every wall.
+  const wains = (w, x, z, ry = 0) => {
+    add(geoFor(w, 1.1, 0.09), oakM, x, 0.55, z, ry);
+    add(geoFor(w, 0.06, 0.12), brassM, x, 1.13, z, ry);
+  };
+  wains(47, 0, -19.85); wains(47, 0, 19.85); wains(39, -23.85, 0, Math.PI / 2); wains(39, 23.85, 0, Math.PI / 2);
+  wains(15.6, 0, -5.38);
+  for (const [sx, sw] of [[-18, 12], [-4, 4], [4, 4], [18, 12]]) { wains(sw, sx, 11.71); wains(sw, sx, 12.29); }
+  for (const [sx, sw] of [[-21.5, 5], [-13, 4], [-4.5, 5], [4.5, 5], [13, 4], [21.5, 5]]) { wains(sw, sx, -11.71); wains(sw, sx, -12.29); }
+  for (const sd of [-1, 1]) {
+    for (const f of [11.21, 11.79]) for (const zz of [-7, 7]) wains(10, sd * f, zz, Math.PI / 2);
+    for (const f of [7.71, 8.29]) { wains(3, sd * f, -18.5, Math.PI / 2); wains(1, sd * f, -12.7, Math.PI / 2); }
+  }
   for (const [lx, lz] of [[-20.6, 4], [-13.4, -1], [-20.6, -6], [-13.4, -9.5]]) {
     for (const sd of [-1, 1]) { // forest back panel under the spine face
       add(geoFor(3.3, 1.9, 0.05), forestM, lx, 1.02, lz + sd * 0.59);
@@ -487,7 +500,7 @@ export function buildMap(scene) {
     booksPlane(2.7, 3.15, sx, 1.78, -19.565, 0);
     add(geoFor(3.1, 0.12, 0.5), oakM, sx, 3.54, -19.75);
   }
-  // Rolling ladder against the Library's tall shelves.
+  // Rolling ladder.
   const ladder = new THREE.Group();
   ladder.position.set(-18.2, 0, -19.1); ladder.rotation.x = -0.22; group.add(ladder);
   for (const s of [-0.5, 0.5]) {
@@ -498,13 +511,13 @@ export function buildMap(scene) {
     const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.0, 8), brassM);
     rung.rotation.z = Math.PI / 2; rung.position.set(0, 0.35 + i * 0.5, 0); ladder.add(rung);
   }
-  // Library piers get a base, a gilt band and a capital.
+  // Pier bases, bands, capitals.
   for (const [cx, cz] of [[-21, -17.6], [-21, -13.6], [-13.6, -17.9]]) {
     add(geoFor(2.5, 0.28, 2.5), marbleM, cx, 0.14, cz);
     add(geoFor(2.32, 0.14, 2.32), brassM, cx, 3.85, cz);
     add(geoFor(2.6, 0.24, 2.6), marbleM, cx, 4.28, cz);
   }
-  // Clocks and dials: gilt-rimmed faces over the conservatory, both sites.
+  // Clocks and dials.
   const dialM = new THREE.MeshStandardMaterial({ map: gaugeTexture(), roughness: 0.5, metalness: 0.1, envMapIntensity: 0.4 });
   const dialAt = (x, y, z, ry, r = 0.13) => {
     const d = new THREE.Mesh(new THREE.CircleGeometry(r, 18), dialM);
@@ -517,7 +530,7 @@ export function buildMap(scene) {
   };
   clockAt(0, 3.4, -19.84, 0); clockAt(-15.2, 3.55, -19.86, 0); clockAt(19.5, 3.6, -19.86, 0);
   dialAt(-14.97, 0.62, -15.5, Math.PI / 2, 0.14); // regulator dial on the A plinth
-  // Wayfinding signs over the doorways and the hall doors.
+  // Wayfinding signs.
   const sign = (text, tab, x, z, ry) => {
     add(geoFor(2.6, 0.78, 0.1), darkM, x, 3.3, z, ry);
     const p = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6),
@@ -527,15 +540,15 @@ export function buildMap(scene) {
   sign('GRAND HALL', '#c9a227', 0, 11.68, Math.PI);
   sign('ENTRANCE', '#c9a227', 0, 12.38, 0);
   sign('A · LIBRARY', '#e07b2a', -17, -12.42, Math.PI);
-  sign('B · GALLERY', '#1e463c', 17, -12.42, Math.PI);
-  // Porter's desk: walnut panels on its public face, a brass rail, desk lamps.
+  sign('B · GALLERY', '#1a5c3d', 17, -12.42, Math.PI);
+  // Porter's desk dressing.
   for (const s of [-2.3, 0, 2.3]) add(geoFor(2.1, 0.86, 0.04), woodM, s, 0.55, 15.78);
   const rail2 = add(new THREE.CylinderGeometry(0.035, 0.035, 7.2, 10), brassM, 0, 1.26, 15.82);
   rail2.rotation.z = Math.PI / 2;
   tableLamp(-2.9, 1.22, 15.2); tableLamp(2.9, 1.22, 15.2);
   bookStack(0.4, 1.22, 15.25, 3);
 
-  // Winged statues: lathed robe, gilt laurel, extruded wing profiles.
+  // Winged statues.
   const wingShape = new THREE.Shape();
   wingShape.moveTo(0, 0);
   wingShape.quadraticCurveTo(0.5, 0.12, 0.66, 0.62);
@@ -568,7 +581,7 @@ export function buildMap(scene) {
   statue(-3, 1.22, -2.5, 1.15); statue(3, 1.22, 0.5, 1.15);
   statue(0, 2.0, -1, 1.5);
   statue(20.5, 1.3, -17.8, 1.05, -0.5); statue(20.4, 1.5, 3.5, 1.0, -0.9);
-  // Display cases: gilt posts and rim over the glass colliders, a vase inside.
+  // Display cases with vases.
   const vaseGeo = new THREE.LatheGeometry(
     [[0.02, 0], [0.13, 0.03], [0.16, 0.18], [0.08, 0.34], [0.1, 0.42]]
       .map(([a, b]) => new THREE.Vector2(a, b)), 14);
@@ -582,9 +595,9 @@ export function buildMap(scene) {
   };
   caseKit(21, -16.5, 1.4, 3.0, 1.6);
   caseKit(13.8, -2.5, 1.8, 3.0, 1.5);
-  // Site A plinth: book stacks and a reading lamp beside the socket.
+  // Site A plinth dressing.
   bookStack(-19, 1.0, -14.3, 3); tableLamp(-19, 1.0, -12.1);
-  // Low bookcases in the hall: spine faces, book stacks, a globe on the west one.
+  // Low bookcases in the hall.
   for (const [cx, cz] of [[-9.2, 3.5], [9.2, -4.5]]) {
     for (const sd of [-1, 1]) {
       add(geoFor(1.5, 1.14, 0.04), forestM, cx, 0.6, cz + sd * 0.795);
@@ -599,15 +612,15 @@ export function buildMap(scene) {
     const mer = add(new THREE.TorusGeometry(0.32, 0.015, 6, 24), brassM, -8.6, 1.68, 3.2);
     mer.rotation.set(0, 0.5, 0.42);
   }
-  // Upholstered benches: a navy cushion on the low blocks, a book left behind.
+  // Upholstered benches.
   for (const [cx, cz] of [[-9.2, -6.5], [9.2, 6.5]]) {
     add(geoFor(1.7, 0.12, 1.7), clothM, cx, 0.86, cz);
     bookStack(cx + 0.3, 0.92, cz - 0.3, 2);
   }
-  // The long reading table in the west lane: lamps and open book stacks.
+  // Reading table dressing.
   tableLamp(-18.6, 1.05, 8.5); tableLamp(-15.4, 1.05, 8.5);
   bookStack(-17, 1.05, 8.4, 3); bookStack(-16.2, 1.05, 8.65, 2);
-  // Conservatory tables: potted plants, lamps, ledgers for the defenders.
+  // Conservatory dressing.
   const plant = (x, z) => {
     add(new THREE.CylinderGeometry(0.17, 0.13, 0.3, 10), darkM, x, 1.15, z);
     const f1 = add(new THREE.SphereGeometry(0.3, 10, 8), tealM, x, 1.5, z); f1.scale.y = 0.8;
@@ -615,7 +628,7 @@ export function buildMap(scene) {
   plant(-4.6, -18.6); plant(4.6, -18.6);
   bookStack(-3.2, 1.0, -18.6, 3); bookStack(3.4, 1.0, -18.4, 2);
   tableLamp(-5.2, 1.0, -18.8); tableLamp(5.2, 1.0, -18.8);
-  // Vestibule waiting benches: walnut slats, a navy cushion roll.
+  // Vestibule benches.
   const wbench = (cx) => {
     for (let i = 0; i < 3; i++) add(geoFor(2.9, 0.05, 0.24), woodM, cx, 0.94, 17.5 - 0.28 + i * 0.28);
     const bk = add(geoFor(2.9, 0.4, 0.05), woodM, cx, 1.28, 17.98);
@@ -623,7 +636,7 @@ export function buildMap(scene) {
     add(geoFor(0.7, 0.09, 0.5), clothM, cx - 0.8, 1.0, 17.5);
   };
   wbench(-7.5); wbench(7.5);
-  // Queue rails guiding the line to the porter's desk.
+  // Queue rails.
   for (const sx of [-1, 1]) {
     for (const px of [0.55, 1.55, 2.55]) add(new THREE.CylinderGeometry(0.035, 0.045, 0.95, 10), brassM, sx * px, 0.48, 13.7);
     const qr1 = add(new THREE.CylinderGeometry(0.028, 0.028, 2.1, 8), brassM, sx * 1.55, 0.92, 13.7);
@@ -631,12 +644,12 @@ export function buildMap(scene) {
     const qr2 = add(new THREE.CylinderGeometry(0.022, 0.022, 2.1, 8), brassM, sx * 1.55, 0.55, 13.7);
     qr2.rotation.z = Math.PI / 2;
   }
-  // Gallery supports get a capital and a base so they read as columns.
+  // Gallery support capitals and bases.
   for (const sx of [-7.6, 7.6]) {
     add(geoFor(0.74, 0.18, 0.74), ivoryM, sx, 1.95, -10.5);
     add(geoFor(0.74, 0.16, 0.74), ivoryM, sx, 0.1, -10.5);
   }
-  // Tall arched windows: ivory frame, bright sky glass, mullion cross, sill.
+  // Tall arched windows.
   const glassM = new THREE.MeshStandardMaterial({ color: PALETTE.sky, emissive: 0xeaf4fb, emissiveIntensity: 0.8, roughness: 0.35, metalness: 0.05, envMapIntensity: 0.5 });
   const win = (x, z, ry) => {
     const g2 = new THREE.Group();
@@ -655,7 +668,7 @@ export function buildMap(scene) {
   for (const x of [-16, -5.5, 5.5, 16]) win(x, 19.86, Math.PI);
   for (const z of [-14, -6, 6, 14]) { win(-23.86, z, Math.PI / 2); win(23.86, z, -Math.PI / 2); }
   win(-18, 12.3, 0); win(18, 12.3, 0);
-  // Gilt medallions on the hall's north wall, the parapet and the vestibule.
+  // Gilt medallions.
   const medallion = (x, z, ry, y = 3.05) => {
     const g2 = new THREE.Group();
     g2.position.set(x, y, z); g2.rotation.y = ry; group.add(g2);
@@ -666,7 +679,7 @@ export function buildMap(scene) {
   medallion(-13, -11.72, 0); medallion(-4.5, -11.72, 0); medallion(4.5, -11.72, 0); medallion(13, -11.72, 0);
   medallion(-4, -8.6, 0, 2.55); medallion(4, -8.6, 0, 2.55);
   medallion(-10.5, 19.86, Math.PI); medallion(10.5, 19.86, Math.PI);
-  // Lintels over the doorways that have no arch: connectors, office doors, doors.
+  // Lintels over plain doorways.
   const lintel = (x, z, ry) => {
     add(geoFor(2.7, 0.3, 0.5), ivoryM, x, 2.32, z, ry);
     add(geoFor(2.7, 0.07, 0.54), brassM, x, 2.14, z, ry);
@@ -674,7 +687,7 @@ export function buildMap(scene) {
   lintel(-11.5, 0, Math.PI / 2); lintel(11.5, 0, Math.PI / 2);
   lintel(-8, -15.5, Math.PI / 2); lintel(8, -15.5, Math.PI / 2);
   lintel(-9, 12, 0); lintel(9, 12, 0);
-  // Hanging lamps over each lane, the hall, both sites and the spawns.
+  // Hanging lamps.
   const lamp = (x, z) => {
     add(new THREE.CylinderGeometry(0.018, 0.018, 0.85, 8), darkM, x, 4.18, z);
     add(new THREE.CylinderGeometry(0.05, 0.17, 0.13, 12), darkM, x, 3.72, z);
@@ -683,7 +696,7 @@ export function buildMap(scene) {
   };
   lamp(-17, 6); lamp(-17, -4); lamp(17, 6); lamp(17, -4);
   lamp(0, 4.5); lamp(0, -5.5); lamp(-17.5, -15.5); lamp(17, -15); lamp(0, -16); lamp(0, 16.8);
-  // Pitched glazed roof: entablature ring on columns, ridge beam, rafters,
+  // Pitched glazed roof.
   const beam = (w, h, d, x, y, z, rz = 0) => { const m = add(geoFor(w, h, d), darkM, x, y, z); m.rotation.z = rz; return m; };
   for (const [w, d, x, z] of [[0.35, 17.2, -8.3, -1], [0.35, 17.2, 8.3, -1], [17.0, 0.35, 0, 7.05], [17.0, 0.35, 0, -9.05]])
     beam(w, 0.35, d, x, 4.78, z); // entablature ring
@@ -691,7 +704,7 @@ export function buildMap(scene) {
   const rSlope = Math.atan2(2.05, 8.3), rLen = Math.hypot(8.3, 2.05);
   for (let z = -8.6; z <= 6.7; z += 1.9) for (const sd of [-1, 1]) // rafters
     beam(rLen, 0.15, 0.18, sd * 4.15, 6.02, z, -sd * rSlope);
-  for (const sd of [-1, 1]) for (const px of [2.8, 5.6]) // purlins, seated on the rafters
+  for (const sd of [-1, 1]) for (const px of [2.8, 5.6]) // purlins
     beam(0.12, 0.1, 16.4, sd * px, 7.05 - px * Math.tan(rSlope) + 0.10, -1, -sd * rSlope);
   const roofGlassM = new THREE.MeshStandardMaterial({ color: PALETTE.sky, transparent: true, opacity: 0.34, roughness: 0.12, metalness: 0.1, envMapIntensity: 1.2, side: THREE.DoubleSide, depthWrite: false });
   const paneGeo = new THREE.PlaneGeometry(rLen - 0.1, 16.5);
@@ -701,7 +714,7 @@ export function buildMap(scene) {
     pane.position.set(sd * 4.15, 6.14, -1); pane.rotation.z = -sd * rSlope;
     group.add(pane);
   }
-  const gableShape = new THREE.Shape(); // gable infill, base on the entablature
+  const gableShape = new THREE.Shape(); // gable infill
   gableShape.moveTo(-8.3, 4.95); gableShape.lineTo(8.3, 4.95); gableShape.lineTo(0, 7.17); gableShape.closePath();
   const gableGeo = new THREE.ExtrudeGeometry(gableShape, { depth: 0.14, bevelEnabled: false });
   for (const gz of [6.98, -9.12]) {
@@ -715,7 +728,7 @@ export function buildMap(scene) {
     const rim = new THREE.Mesh(new THREE.TorusGeometry(0.65, 0.05, 8, 24), brassM);
     rim.position.set(0, 5.95, gz); group.add(rim);
   }
-  for (const tz of [-5.8, 3.8]) { // tie trusses: tie rod + king post to the ridge
+  for (const tz of [-5.8, 3.8]) { // tie trusses
     const tie = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 16.6, 8), darkM);
     tie.rotation.z = Math.PI / 2; tie.position.set(0, 5.0, tz); group.add(tie);
     add(new THREE.CylinderGeometry(0.035, 0.035, 1.87, 8), darkM, 0, 5.93, tz);

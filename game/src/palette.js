@@ -1,6 +1,6 @@
 // Saintmere Hall's art palette: a bright grand-library interior — warm ivory
 export const PALETTE = {
-  forest: 0x1e463c,
+  forest: 0x1a5c3d,
   forestDark: 0x14332b,
   teal: 0x2e5a55, // Siphon
   tealDark: 0x22423e,
