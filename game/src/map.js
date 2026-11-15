@@ -234,12 +234,16 @@ export function circleBlocked(boxes, x, z, radius, feetY, height) {
   return false;
 }
 
+const METALS = new Set([PALETTE.brass, PALETTE.brassDark, PALETTE.copper]);
 const MAT_CACHE = new Map();
 function material(colour, emissive = 0) {
   const key = colour * 1000 + emissive;
   if (!MAT_CACHE.has(key)) {
-    MAT_CACHE.set(key, new THREE.MeshLambertMaterial({
+    const metal = METALS.has(colour);
+    MAT_CACHE.set(key, new THREE.MeshStandardMaterial({
       color: colour,
+      roughness: metal ? 0.38 : 0.88,
+      metalness: metal ? 0.55 : 0.03,
       emissive: emissive ? colour : 0x000000,
       emissiveIntensity: emissive ? 0.9 : 0,
     }));
@@ -259,7 +263,7 @@ export function buildMap(scene) {
   for (const b of boxes) {
     const mesh = new THREE.Mesh(geoFor(b.w, b.h, b.d), material(PALETTE[b.mat] ?? b.mat));
     mesh.position.set(b.x, b.y0 + b.h / 2, b.z);
-    mesh.castShadow = false;
+    mesh.castShadow = true;
     mesh.receiveShadow = true;
     group.add(mesh);
   }
@@ -312,14 +316,16 @@ export function buildMap(scene) {
   // Site B turbine: a six-metre wheel that turns slowly behind the socket.
   const turbine = new THREE.Group();
   const ring = new THREE.Mesh(new THREE.TorusGeometry(3, 0.28, 10, 36), material(PALETTE.jade));
+  ring.castShadow = true;
   turbine.add(ring);
   for (let i = 0; i < 6; i++) {
     const bar = new THREE.Mesh(geoFor(0.35, 5.6, 0.3), material(PALETTE.brass));
     bar.rotation.z = (i / 6) * Math.PI;
+    bar.castShadow = true;
     turbine.add(bar);
   }
   const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.6, 16), material(PALETTE.petrol));
-  hub.rotation.x = Math.PI / 2; turbine.add(hub);
+  hub.rotation.x = Math.PI / 2; hub.castShadow = true; turbine.add(hub);
   turbine.position.set(19.5, 3.1, -18.6);
   group.add(turbine);
   boxes.push(B(19.5, -18.6, 6.4, 0.8, 0, 6.2, 'petrol'));

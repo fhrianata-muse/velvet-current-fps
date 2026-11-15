@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';
 
-const mat = (colour) => new THREE.MeshLambertMaterial({ color: colour });
+const mat = (colour) => new THREE.MeshStandardMaterial({ color: colour, roughness: 0.82, metalness: 0.04 });
 const box = (w, h, d, colour, x, y, z) => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(colour));
   m.position.set(x, y, z);

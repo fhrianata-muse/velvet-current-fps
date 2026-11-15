@@ -26,29 +26,39 @@ renderer.setPixelRatio(shot ? 1 : Math.min(window.devicePixelRatio, 1.75));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
 document.getElementById('game').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9db8b4);
-scene.fog = new THREE.Fog(0x9db8b4, 30, 85);
+scene.background = new THREE.Color(PALETTE.petrol);
+scene.fog = new THREE.Fog(PALETTE.petrol, 45, 120);
 const camera = new THREE.PerspectiveCamera(73, window.innerWidth / window.innerHeight, 0.05, 160);
 scene.add(camera);
 const vmLight = new THREE.PointLight(0xfff1cf, 2.6, 4.5, 1.4); // viewmodel fill light
 camera.add(vmLight);
 
-const hemi = new THREE.HemisphereLight(0xfff1cf, 0x27505e, 1.1);
+const hemi = new THREE.HemisphereLight(0xffe9c4, 0x1c3a44, 0.5);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff3d0, 1.6);
-sun.position.set(14, 26, 10);
+const sun = new THREE.DirectionalLight(0xffdfae, 2.4);
+sun.position.set(18, 30, -6);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
-sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
-sun.shadow.camera.far = 70;
+sun.shadow.camera.left = -34; sun.shadow.camera.right = 34;
+sun.shadow.camera.top = 34; sun.shadow.camera.bottom = -34;
+sun.shadow.camera.far = 100;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.02;
 scene.add(sun);
-for (const [x, z, c] of [[0, 16, 0xfff1cf], [0, -16, 0xfff1cf], [-17, -15, 0xffd9a0], [18, -15, 0xcfe8dd]]) {
-  const p = new THREE.PointLight(c, 18, 16, 1.6);
-  p.position.set(x, 3.4, z);
+// Practicals: warm pools of light at the vestibule, the office and both sites,
+// plus the chandelier's glow over the basin.
+for (const [x, y, z, c, i, d] of [
+  [0, 3.4, 16, 0xfff1cf, 30, 20], [0, 3.4, -16, 0xfff1cf, 30, 20],
+  [-17, 3.4, -15, 0xffd9a0, 30, 18], [18, 3.4, -15, 0xcfe8dd, 30, 18],
+  [0, 5.2, -1, 0xffd9a0, 26, 18],
+]) {
+  const p = new THREE.PointLight(c, i, d, 1.6);
+  p.position.set(x, y, z);
   scene.add(p);
 }
 
@@ -365,7 +375,7 @@ function stageShot(n) {
     player.groundY = -0.6;
     place(allies[0], -9.2, 1.5, -1.2);
     place(allies[1], -1.8, 0.8, -0.7);
-    place(enemies[0], 5.2, 0.6, 2.6);
+    place(enemies[0], 3.9, 2.4, 2.6);
     place(enemies[1], 5, -10.6, Math.PI);
     place(enemies[2], 17, -6, Math.PI);
     for (let i = 0; i < 30; i++) stepMatch(match, STEP, { boxes, events, input: stillInput });
@@ -379,16 +389,18 @@ function stageShot(n) {
     player.alive = true;
     player.health = 62; // pin the staged state last: in the fight, not fresh, not dead
   } else if (n === '2') {
-    // Plant channel at Site A: the player plants, an ally covers the Cloakroom door.
+    // Plant channel at Site A: the player plants at the socket with the Leech
+    // deploying in frame; an ally covers the office-door approach to the east.
     match.phase = 'live'; match.phaseTime = 58;
     match.planSite = 'A';
     match.device.carrier = player;
     givePrimary(player, 'bastion5', 0.85);
-    place(player, -16.5, -14.3, 0.69);
+    place(player, -18.9, -13.8, -0.7);
+    player.pitch = -0.1;
     player.intent = 'plant';
-    place(allies[0], -13.6, -17.2, 1.9);
+    place(allies[0], -12.9, -16.2, -Math.PI / 2);
     place(allies[1], -9.2, 0, -1.4);
-    place(enemies[0], -13.2, -17.8, -1.8);
+    place(enemies[0], 0, -17, Math.PI);
     place(enemies[1], 5, -10.6, Math.PI);
     place(enemies[2], 17, 3, Math.PI);
     match.channel = { actor: player, kind: 'plant', t: 1.5, need: 3, site: 'A', x: player.pos.x, z: player.pos.z };
@@ -399,7 +411,9 @@ function stageShot(n) {
     events.length = 0;
     player.intent = 'plant';
   } else if (n === '3') {
-    // Defensive retake at Site B, round 2: Leech planted, an ally defuses under cover.
+    // Defensive retake at Site B, round 2: Leech planted, an ally defuses under
+    // cover. The camera stands in the B doorway, clear of the walls, looking
+    // straight at the socket with the turbine wheel behind it.
     match.round = 2;
     match.score.siphon = 1; match.score.still = 0;
     match.phase = 'planted';
@@ -410,11 +424,11 @@ function stageShot(n) {
     match.device.fuse = 18.4;
     match.device.carrier = null;
     givePrimary(player, 'rill24', 0.8);
-    place(player, 12.8, -8.6, -0.56);
-    place(allies[0], 16.9, -14.1, 0.6);
+    place(player, 17.2, -11.6, 0.24);
+    place(allies[0], 16.5, -16.2, Math.PI);
     allies[0].intent = 'defuse';
     place(allies[1], 9.2, -4.5, -0.8);
-    place(enemies[0], 17.5, -11.8, Math.PI + 0.4);
+    place(enemies[0], 13.6, -15.8, Math.PI + 0.4);
     place(enemies[1], 21.5, -13.6, Math.PI);
     enemies[2].alive = false; enemies[2].health = 0;
     match.channel = { actor: allies[0], kind: 'defuse', t: 2.3, need: 5, site: 'B', x: allies[0].pos.x, z: allies[0].pos.z };
@@ -454,7 +468,15 @@ function syncScene(now) {
   }
   // Device: on the carrier's back, on the ground where dropped, or on the socket.
   const d = match.device;
-  if (d.state === 'carried' && d.carrier) {
+  const planting = match.channel?.kind === 'plant' ? match.channel : null;
+  if (planting) {
+    // Mid-plant the Leech is on the socket, opening — not still on the planter's back.
+    const s = SITES[planting.site].socket;
+    deviceMesh.group.position.set(s.x, 0, s.z);
+    deviceMesh.group.rotation.y = 0;
+    deviceMesh.setPlanted(0.3 + 0.7 * (planting.t / planting.need));
+    deviceMesh.group.visible = true;
+  } else if (d.state === 'carried' && d.carrier) {
     const c = d.carrier;
     deviceMesh.group.position.set(c.pos.x + Math.sin(c.yaw) * 0.3, c.groundY + 1.15, c.pos.z + Math.cos(c.yaw) * 0.3);
     deviceMesh.group.rotation.y = c.yaw;
