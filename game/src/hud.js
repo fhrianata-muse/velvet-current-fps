@@ -123,7 +123,10 @@ export function createHud() {
 		hurt(now, amount) { hurtT = now; hurtHeavy = amount > 40; },
 		say(match, actor, text) {
 			if (!actor) return;
-			comms.push({ h: `<b style="color:${TEAM_CSS[actor.team]}">${nameOf(actor).toUpperCase()}</b> ${text}`, t: match.time });
+			const nm = nameOf(actor);
+			const room = 39 - nm.length;
+			if (text.length > room) text = `${text.slice(0, room - 1)}…`;
+			comms.push({ h: `<b style="color:${TEAM_CSS[actor.team]}">${nm.toUpperCase()}</b> ${text}`, t: match.time });
 			if (comms.length > 4) comms.shift();
 		},
 		contact(match, target) {
@@ -150,9 +153,6 @@ export function createHud() {
 			for (const s of Object.values(SITES)) {
 				g.fillStyle = 'rgba(201,162,39,0.14)';
 				g.fillRect(mx(s.x0), mz(s.z0), (s.x1 - s.x0) * MK, (s.z1 - s.z0) * MK);
-				g.fillStyle = '#e8c97a';
-				g.font = '700 11px Arial';
-				g.fillText(s.id, mx(s.x0) + 4, mz(s.z0) + 13);
 			}
 			g.fillStyle = 'rgba(233,226,208,0.42)';
 			for (const b of boxes) {
@@ -240,6 +240,7 @@ export function createHud() {
         els.interact.hidden = false;
         const frac = Math.min(1, ch.t / ch.need);
         els.interactFill.style.width = `${frac * 100}%`;
+        els.interactFill.style.background = `hsl(${Math.round(ch.kind === 'defuse' ? 158 - frac * 115 : 16 + frac * 27)} 85% 52%)`;
         els.interact.classList.toggle('defuse', ch.kind === 'defuse');
         const what = ch.kind === 'plant' ? 'Planting the Pulse Leech' : 'Defusing the Pulse Leech';
         els.interactLabel.textContent = ch.actor.isPlayer ? `${what} — ${Math.round(frac * 100)}%`
@@ -290,6 +291,15 @@ export function createHud() {
           mm.fillStyle = '#f8f0e1';
           mm.fill();
           mm.restore();
+        }
+        // Site labels last, over the dots, with a dark halo.
+        mm.font = '700 11px Arial';
+        mm.lineWidth = 3;
+        mm.strokeStyle = 'rgba(5,9,8,.85)';
+        mm.fillStyle = '#e8c97a';
+        for (const s of Object.values(SITES)) {
+          mm.strokeText(s.id, mx(s.x0) + 4, mz(s.z0) + 13);
+          mm.fillText(s.id, mx(s.x0) + 4, mz(s.z0) + 13);
         }
       }
       // Deaths tally (for the scoreboard), from alive transitions.

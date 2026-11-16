@@ -256,7 +256,7 @@ function processEvents(now) {
 			case 'buy': if (e.actor.isPlayer) audio.buy(); break;
 			case 'round-start': {
 				hud.banner(`ROUND ${e.round}`, player.team === e.attackTeam ? 'Your team attacks' : 'Your team defends', 2.2, now);
-				const dest = match.planSite === 'A' ? 'the Library — west lane.' : 'the Gallery — east lane, watch the balcony.';
+				const dest = match.planSite === 'A' ? 'the Library — west lane.' : 'the Gallery — east lane.';
 				hud.say(match, firstBot(e.attackTeam), `Pushing ${dest}`);
 				break;
 			}
