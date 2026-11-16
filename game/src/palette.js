@@ -2,15 +2,15 @@
 export const PALETTE = {
   forest: 0x1a5c3d,
   forestDark: 0x14332b,
-  teal: 0x2e5a55, // Siphon
+  teal: 0x2e5a55,
   tealDark: 0x22423e,
-  orange: 0xe07b2a, // Siphon accent
+  orange: 0xe07b2a,
   ivory: 0xede6d6,
   ivoryDim: 0xd8cbae,
   brass: 0xc0a062,
   brassDark: 0x8a6d3b,
-  gold: 0xc9a227, // Stillguard accent
-  charcoal: 0x262b36, // Stillguard
+  gold: 0xc9a227,
+  charcoal: 0x262b36,
   charcoalLight: 0x39404e,
   armour: 0x1d212b,
   petrol: 0x2b2f36,
@@ -28,10 +28,9 @@ export const PALETTE = {
   deckEdge: 0x6b4a2f,
   amber: 0xe8a33d,
   skin: 0xd9a878,
-  mask: 0xa34a38, // Scout mask, red-brown
+  mask: 0xa34a38,
 };
 
-// Deterministic RNG (mulberry32) for bot jitter and staged captures.
 export function makeRng(seed) {
   let a = seed | 0;
   return function rng() {
